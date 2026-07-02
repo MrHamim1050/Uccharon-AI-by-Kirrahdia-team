@@ -296,7 +296,18 @@ export function VoiceInput() {
         />
       </div>
 
-      {error && (
+      {audioUrl && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">
+            Playback your recording
+          </label>
+          <audio
+            src={audioUrl}
+            controls
+            className="w-full rounded-md bg-muted/40 border border-border"
+          />
+        </div>
+      )}
         <div className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2">
           {error}
         </div>
