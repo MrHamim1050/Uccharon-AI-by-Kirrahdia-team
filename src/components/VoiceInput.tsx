@@ -117,7 +117,12 @@ export function VoiceInput() {
   async function startRecording() {
     setError(null);
     setDiff(null);
+    setAnalysis(null);
     setTranscript("");
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+      setAudioUrl(null);
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
