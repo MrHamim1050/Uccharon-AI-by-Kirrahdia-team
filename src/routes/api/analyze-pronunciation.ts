@@ -39,7 +39,7 @@ Return a concise JSON object with this exact shape:
 }
 Only return JSON. No markdown, no code fences.`;
 
-        const userPrompt = `TRANSCRIPT: ${transcript}`;
+        const userPrompt = `LANGUAGE: ${langLabel}\nAnalyze the transcript in this language. Respond in the SAME language as the transcript for "overall", "strengths", "problem", "tip", and "practiceTip". Keep the JSON keys in English.\n\nTRANSCRIPT: ${transcript}`;
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
