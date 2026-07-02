@@ -179,6 +179,7 @@ export function VoiceInput() {
         throw new Error("Recording was too short. Please try again.");
       }
       const ext = pickExt(mime);
+      setAudioUrl(URL.createObjectURL(blob));
       const form = new FormData();
       form.append("file", blob, `recording.${ext}`);
 
