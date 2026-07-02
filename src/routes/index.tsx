@@ -1,24 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { VoiceInput } from "@/components/VoiceInput";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
   component: Index,
+  head: () => ({
+    meta: [
+      { title: "Pronunciation Practice — Voice Input" },
+      {
+        name: "description",
+        content: "Record your voice, transcribe it with AI, and check your pronunciation against a target sentence.",
+      },
+      { property: "og:title", content: "Pronunciation Practice — Voice Input" },
+      {
+        property: "og:description",
+        content: "Record your voice, transcribe it with AI, and check your pronunciation against a target sentence.",
+      },
+    ],
+  }),
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="min-h-screen bg-background py-12 px-4">
+      <div className="max-w-2xl mx-auto mb-8 text-center space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Pronunciation Practice</h1>
+        <p className="text-muted-foreground">
+          Tap the mic, read the sentence aloud, and see which words matched.
+        </p>
+      </div>
+      <VoiceInput />
+    </main>
   );
 }
