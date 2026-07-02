@@ -345,6 +345,82 @@ export function VoiceInput() {
           </div>
         </div>
       )}
+
+      <Button
+        onClick={analyzeWithAI}
+        disabled={!transcript.trim() || !target.trim() || analyzing}
+        variant="secondary"
+        className="w-full"
+        size="lg"
+      >
+        {analyzing ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" /> Analyzing…
+          </>
+        ) : (
+          <>
+            <Sparkles className="h-4 w-4" /> Get AI Pronunciation Analysis
+          </>
+        )}
+      </Button>
+
+      {analysis && (
+        <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-muted-foreground">AI Analysis</label>
+            {typeof analysis.score === "number" && (
+              <div className="text-2xl font-bold tabular-nums text-primary">
+                {analysis.score}
+                <span className="text-sm text-muted-foreground font-normal">/100</span>
+              </div>
+            )}
+          </div>
+
+          {analysis.overall && (
+            <p className="text-sm text-foreground leading-relaxed">{analysis.overall}</p>
+          )}
+
+          {analysis.strengths && analysis.strengths.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Strengths
+              </div>
+              <ul className="list-disc list-inside text-sm space-y-0.5">
+                {analysis.strengths.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.issues && analysis.issues.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Areas to improve
+              </div>
+              <ul className="space-y-2">
+                {analysis.issues.map((iss, i) => (
+                  <li
+                    key={i}
+                    className="rounded-md border border-border bg-card p-3 text-sm space-y-1"
+                  >
+                    <div className="font-semibold text-destructive">{iss.word}</div>
+                    <div className="text-foreground">{iss.problem}</div>
+                    <div className="text-muted-foreground italic">💡 {iss.tip}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.practiceTip && (
+            <div className="text-sm border-t border-border pt-3">
+              <span className="font-semibold">Next: </span>
+              {analysis.practiceTip}
+            </div>
+          )}
+        </div>
+      )}
     </Card>
   );
 }
