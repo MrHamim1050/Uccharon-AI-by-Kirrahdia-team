@@ -214,6 +214,28 @@ export function VoiceInput() {
     setDiff(result);
   }
 
+  async function analyzeWithAI() {
+    setAnalyzing(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/analyze-pronunciation", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ target, transcript }),
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(t || `AI analysis failed (${res.status})`);
+      }
+      const data = (await res.json()) as Analysis;
+      setAnalysis(data);
+    } catch (e: any) {
+      setError(e.message ?? "AI analysis failed");
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
   const seconds = (elapsedMs / 1000).toFixed(1);
   const isRecording = status === "recording";
   const isBusy = status === "transcribing";
