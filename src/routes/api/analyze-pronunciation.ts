@@ -12,13 +12,18 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
           });
         }
 
-        const { transcript } = (await request.json()) as { transcript?: string };
+        const { transcript, language } = (await request.json()) as {
+          transcript?: string;
+          language?: string;
+        };
         if (!transcript || !transcript.trim()) {
           return new Response(JSON.stringify({ error: "transcript required" }), {
             status: 400,
             headers: { "content-type": "application/json" },
           });
         }
+        const langLabel = language && language !== "auto" ? language : "the language the learner spoke (auto-detect)";
+
 
         const systemPrompt = `You are a friendly, expert pronunciation and speech coach. You will be given the TRANSCRIPT that an automatic speech-to-text system produced from a learner's spoken audio. There is NO target sentence — analyze what they actually said. Because the transcript comes from ASR, unusual spellings, dropped words, or garbled tokens usually reveal real pronunciation issues (unclear consonants, dropped endings, wrong vowel sounds, misplaced stress, mumbling, pacing).
 
