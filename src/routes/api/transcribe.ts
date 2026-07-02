@@ -21,9 +21,14 @@ export const Route = createFileRoute("/api/transcribe")({
           });
         }
 
+        const language = form.get("language");
         const upstream = new FormData();
         upstream.append("file", file, file.name || "recording.webm");
         upstream.append("model", "openai/gpt-4o-mini-transcribe");
+        if (typeof language === "string" && language && language !== "auto") {
+          upstream.append("language", language);
+        }
+
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
           method: "POST",

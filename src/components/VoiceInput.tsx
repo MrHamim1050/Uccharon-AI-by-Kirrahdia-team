@@ -2,6 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, Square, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import {
   Tooltip,
@@ -35,7 +42,27 @@ function pickExt(mime: string) {
   return "webm";
 }
 
+const LANGUAGES: { code: string; label: string }[] = [
+  { code: "auto", label: "Auto-detect" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "it", label: "Italian" },
+  { code: "pt", label: "Portuguese" },
+  { code: "nl", label: "Dutch" },
+  { code: "hi", label: "Hindi" },
+  { code: "zh", label: "Chinese" },
+  { code: "ja", label: "Japanese" },
+  { code: "ko", label: "Korean" },
+  { code: "ar", label: "Arabic" },
+  { code: "ru", label: "Russian" },
+  { code: "tr", label: "Turkish" },
+  { code: "pl", label: "Polish" },
+];
+
 export function VoiceInput() {
+  const [language, setLanguage] = useState<string>("auto");
   const [status, setStatus] = useState<Status>("idle");
   const [transcript, setTranscript] = useState("");
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -180,6 +207,7 @@ export function VoiceInput() {
       setAudioUrl(URL.createObjectURL(blob));
       const form = new FormData();
       form.append("file", blob, `recording.${ext}`);
+      form.append("language", language);
 
       const res = await fetch("/api/transcribe", { method: "POST", body: form });
       if (!res.ok) {
@@ -202,7 +230,7 @@ export function VoiceInput() {
       const res = await fetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript }),
+        body: JSON.stringify({ transcript, language }),
       });
       if (!res.ok) {
         const t = await res.text();
@@ -243,6 +271,19 @@ export function VoiceInput() {
 
   return (
     <Card className="w-full max-w-2xl mx-auto p-8 space-y-6">
+      <div className="flex items-center justify-between gap-3">
+        <label className="text-sm font-medium text-muted-foreground">Language</label>
+        <Select value={language} onValueChange={setLanguage} disabled={isRecording || isBusy}>
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGES.map((l) => (
+              <SelectItem key={l.code} value={l.code}>{l.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="flex flex-col items-center gap-4">
         <button
           onClick={isRecording ? stopRecording : startRecording}
