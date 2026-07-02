@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mic, Square, Loader2 } from "lucide-react";
+import { Mic, Square, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,15 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
+
+type Analysis = {
+  score?: number | null;
+  overall?: string;
+  strengths?: string[];
+  issues?: { word: string; problem: string; tip: string }[];
+  practiceTip?: string;
+};
+
 
 function normalizeWord(w: string) {
   return w.toLowerCase().replace(/[^\p{L}\p{N}']/gu, "");
@@ -31,6 +40,10 @@ export function VoiceInput() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [diff, setDiff] = useState<{ word: string; ok: boolean }[] | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -104,7 +117,12 @@ export function VoiceInput() {
   async function startRecording() {
     setError(null);
     setDiff(null);
+    setAnalysis(null);
     setTranscript("");
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+      setAudioUrl(null);
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -161,6 +179,7 @@ export function VoiceInput() {
         throw new Error("Recording was too short. Please try again.");
       }
       const ext = pickExt(mime);
+      setAudioUrl(URL.createObjectURL(blob));
       const form = new FormData();
       form.append("file", blob, `recording.${ext}`);
 
@@ -193,6 +212,28 @@ export function VoiceInput() {
       }
     }
     setDiff(result);
+  }
+
+  async function analyzeWithAI() {
+    setAnalyzing(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/analyze-pronunciation", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ target, transcript }),
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(t || `AI analysis failed (${res.status})`);
+      }
+      const data = (await res.json()) as Analysis;
+      setAnalysis(data);
+    } catch (e: any) {
+      setError(e.message ?? "AI analysis failed");
+    } finally {
+      setAnalyzing(false);
+    }
   }
 
   const seconds = (elapsedMs / 1000).toFixed(1);
@@ -255,6 +296,19 @@ export function VoiceInput() {
         />
       </div>
 
+      {audioUrl && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">
+            Playback your recording
+          </label>
+          <audio
+            src={audioUrl}
+            controls
+            className="w-full rounded-md bg-muted/40 border border-border"
+          />
+        </div>
+      )}
+
       {error && (
         <div className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2">
           {error}
@@ -289,6 +343,82 @@ export function VoiceInput() {
           <div className="text-xs text-muted-foreground">
             {diff.filter((w) => w.ok).length} / {diff.length} words matched
           </div>
+        </div>
+      )}
+
+      <Button
+        onClick={analyzeWithAI}
+        disabled={!transcript.trim() || !target.trim() || analyzing}
+        variant="secondary"
+        className="w-full"
+        size="lg"
+      >
+        {analyzing ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" /> Analyzing…
+          </>
+        ) : (
+          <>
+            <Sparkles className="h-4 w-4" /> Get AI Pronunciation Analysis
+          </>
+        )}
+      </Button>
+
+      {analysis && (
+        <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-muted-foreground">AI Analysis</label>
+            {typeof analysis.score === "number" && (
+              <div className="text-2xl font-bold tabular-nums text-primary">
+                {analysis.score}
+                <span className="text-sm text-muted-foreground font-normal">/100</span>
+              </div>
+            )}
+          </div>
+
+          {analysis.overall && (
+            <p className="text-sm text-foreground leading-relaxed">{analysis.overall}</p>
+          )}
+
+          {analysis.strengths && analysis.strengths.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Strengths
+              </div>
+              <ul className="list-disc list-inside text-sm space-y-0.5">
+                {analysis.strengths.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.issues && analysis.issues.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Areas to improve
+              </div>
+              <ul className="space-y-2">
+                {analysis.issues.map((iss, i) => (
+                  <li
+                    key={i}
+                    className="rounded-md border border-border bg-card p-3 text-sm space-y-1"
+                  >
+                    <div className="font-semibold text-destructive">{iss.word}</div>
+                    <div className="text-foreground">{iss.problem}</div>
+                    <div className="text-muted-foreground italic">💡 {iss.tip}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.practiceTip && (
+            <div className="text-sm border-t border-border pt-3">
+              <span className="font-semibold">Next: </span>
+              {analysis.practiceTip}
+            </div>
+          )}
         </div>
       )}
     </Card>
