@@ -271,6 +271,19 @@ export function VoiceInput() {
 
   return (
     <Card className="w-full max-w-2xl mx-auto p-8 space-y-6">
+      <div className="flex items-center justify-between gap-3">
+        <label className="text-sm font-medium text-muted-foreground">Language</label>
+        <Select value={language} onValueChange={setLanguage} disabled={isRecording || isBusy}>
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGES.map((l) => (
+              <SelectItem key={l.code} value={l.code}>{l.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="flex flex-col items-center gap-4">
         <button
           onClick={isRecording ? stopRecording : startRecording}
