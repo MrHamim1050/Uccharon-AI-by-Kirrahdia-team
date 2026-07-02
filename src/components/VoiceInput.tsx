@@ -40,6 +40,10 @@ export function VoiceInput() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [diff, setDiff] = useState<{ word: string; ok: boolean }[] | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
