@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mic, Square, Loader2 } from "lucide-react";
+import { Mic, Square, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,15 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
+
+type Analysis = {
+  score?: number | null;
+  overall?: string;
+  strengths?: string[];
+  issues?: { word: string; problem: string; tip: string }[];
+  practiceTip?: string;
+};
+
 
 function normalizeWord(w: string) {
   return w.toLowerCase().replace(/[^\p{L}\p{N}']/gu, "");
