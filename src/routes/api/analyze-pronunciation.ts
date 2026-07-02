@@ -12,32 +12,29 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
           });
         }
 
-        const { target, transcript } = (await request.json()) as {
-          target?: string;
-          transcript?: string;
-        };
-        if (!target || !transcript) {
-          return new Response(JSON.stringify({ error: "target and transcript required" }), {
+        const { transcript } = (await request.json()) as { transcript?: string };
+        if (!transcript || !transcript.trim()) {
+          return new Response(JSON.stringify({ error: "transcript required" }), {
             status: 400,
             headers: { "content-type": "application/json" },
           });
         }
 
-        const systemPrompt = `You are a friendly, expert pronunciation and speech coach. You will be given a TARGET sentence that a learner tried to say, and the TRANSCRIPT of what an automatic speech-to-text system heard them say. Because the transcript comes from ASR, mismatches often reveal real pronunciation issues (unclear consonants, dropped endings, wrong vowel sounds, misplaced stress).
+        const systemPrompt = `You are a friendly, expert pronunciation and speech coach. You will be given the TRANSCRIPT that an automatic speech-to-text system produced from a learner's spoken audio. There is NO target sentence — analyze what they actually said. Because the transcript comes from ASR, unusual spellings, dropped words, or garbled tokens usually reveal real pronunciation issues (unclear consonants, dropped endings, wrong vowel sounds, misplaced stress, mumbling, pacing).
 
 Return a concise JSON object with this exact shape:
 {
-  "score": number (0-100),
+  "score": number (0-100, overall clarity & fluency),
   "overall": string (1-2 sentence summary),
   "strengths": string[] (0-3 short bullets),
   "issues": [
     { "word": string, "problem": string, "tip": string }
-  ] (0-5 items, only real issues),
+  ] (0-6 items; "word" MUST be a word that appears verbatim in the transcript so it can be highlighted; only include real, likely pronunciation issues),
   "practiceTip": string (one actionable next step)
 }
 Only return JSON. No markdown, no code fences.`;
 
-        const userPrompt = `TARGET: ${target}\nTRANSCRIPT: ${transcript}`;
+        const userPrompt = `TRANSCRIPT: ${transcript}`;
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
