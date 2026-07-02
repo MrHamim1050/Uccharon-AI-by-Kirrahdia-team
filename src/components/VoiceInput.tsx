@@ -207,6 +207,7 @@ export function VoiceInput() {
       setAudioUrl(URL.createObjectURL(blob));
       const form = new FormData();
       form.append("file", blob, `recording.${ext}`);
+      form.append("language", language);
 
       const res = await fetch("/api/transcribe", { method: "POST", body: form });
       if (!res.ok) {
