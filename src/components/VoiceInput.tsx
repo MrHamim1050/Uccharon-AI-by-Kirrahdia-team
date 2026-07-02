@@ -1,28 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, Square, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
+
+type Issue = { word: string; problem: string; tip: string };
 
 type Analysis = {
   score?: number | null;
   overall?: string;
   strengths?: string[];
-  issues?: { word: string; problem: string; tip: string }[];
+  issues?: Issue[];
   practiceTip?: string;
 };
 
-
 function normalizeWord(w: string) {
   return w.toLowerCase().replace(/[^\p{L}\p{N}']/gu, "");
-}
-
-function tokenize(s: string) {
-  return s.split(/\s+/).filter(Boolean);
 }
 
 function pickExt(mime: string) {
@@ -36,14 +38,11 @@ function pickExt(mime: string) {
 export function VoiceInput() {
   const [status, setStatus] = useState<Status>("idle");
   const [transcript, setTranscript] = useState("");
-  const [target, setTarget] = useState("The quick brown fox jumps over the lazy dog.");
   const [elapsedMs, setElapsedMs] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [diff, setDiff] = useState<{ word: string; ok: boolean }[] | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -116,7 +115,6 @@ export function VoiceInput() {
 
   async function startRecording() {
     setError(null);
-    setDiff(null);
     setAnalysis(null);
     setTranscript("");
     if (audioUrl) {
@@ -197,23 +195,6 @@ export function VoiceInput() {
     }
   }
 
-  function checkPronunciation() {
-    const targetWords = tokenize(target).map(normalizeWord);
-    const said = tokenize(transcript);
-    const result = said.map((raw, i) => {
-      const norm = normalizeWord(raw);
-      const ok = i < targetWords.length && norm === targetWords[i];
-      return { word: raw, ok };
-    });
-    // Also flag missing tail words as an appended block
-    if (targetWords.length > said.length) {
-      for (let i = said.length; i < targetWords.length; i++) {
-        result.push({ word: `[${targetWords[i]}]`, ok: false });
-      }
-    }
-    setDiff(result);
-  }
-
   async function analyzeWithAI() {
     setAnalyzing(true);
     setError(null);
@@ -221,7 +202,7 @@ export function VoiceInput() {
       const res = await fetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ target, transcript }),
+        body: JSON.stringify({ transcript }),
       });
       if (!res.ok) {
         const t = await res.text();
@@ -236,21 +217,32 @@ export function VoiceInput() {
     }
   }
 
+  // Map normalized issue word -> Issue for hover lookup
+  const issueMap = useMemo(() => {
+    const map = new Map<string, Issue>();
+    analysis?.issues?.forEach((iss) => {
+      const key = normalizeWord(iss.word);
+      if (key) map.set(key, iss);
+    });
+    return map;
+  }, [analysis]);
+
+  // Split transcript into tokens with whitespace preserved
+  const tokens = useMemo(() => {
+    if (!transcript) return [] as { text: string; isWord: boolean }[];
+    const parts = transcript.split(/(\s+)/);
+    return parts
+      .filter((p) => p.length > 0)
+      .map((p) => ({ text: p, isWord: !/^\s+$/.test(p) }));
+  }, [transcript]);
+
   const seconds = (elapsedMs / 1000).toFixed(1);
   const isRecording = status === "recording";
   const isBusy = status === "transcribing";
+  const hasIssues = (analysis?.issues?.length ?? 0) > 0;
 
   return (
     <Card className="w-full max-w-2xl mx-auto p-8 space-y-6">
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-muted-foreground">Target sentence</label>
-        <Input
-          value={target}
-          onChange={(e) => setTarget(e.target.value)}
-          placeholder="Enter the sentence to practice"
-        />
-      </div>
-
       <div className="flex flex-col items-center gap-4">
         <button
           onClick={isRecording ? stopRecording : startRecording}
@@ -287,13 +279,48 @@ export function VoiceInput() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-muted-foreground">Transcription</label>
-        <Textarea
-          value={transcript}
-          onChange={(e) => setTranscript(e.target.value)}
-          placeholder="Your transcribed speech will appear here…"
-          rows={4}
-        />
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-muted-foreground">Transcription</label>
+          {hasIssues && (
+            <span className="text-xs text-muted-foreground">
+              Hover the <span className="text-destructive font-medium">red</span> words for tips
+            </span>
+          )}
+        </div>
+
+        {hasIssues ? (
+          <TooltipProvider delayDuration={100}>
+            <div className="min-h-[96px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm leading-relaxed">
+              {tokens.map((tok, i) => {
+                if (!tok.isWord) return <span key={i}>{tok.text}</span>;
+                const key = normalizeWord(tok.text);
+                const iss = issueMap.get(key);
+                if (!iss) return <span key={i}>{tok.text}</span>;
+                return (
+                  <Tooltip key={i}>
+                    <TooltipTrigger asChild>
+                      <span className="text-destructive font-semibold underline decoration-wavy decoration-destructive/70 underline-offset-4 cursor-help">
+                        {tok.text}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs space-y-1">
+                      <div className="font-semibold">{iss.word}</div>
+                      <div>{iss.problem}</div>
+                      <div className="italic opacity-80">💡 {iss.tip}</div>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </TooltipProvider>
+        ) : (
+          <Textarea
+            value={transcript}
+            onChange={(e) => setTranscript(e.target.value)}
+            placeholder="Your transcribed speech will appear here…"
+            rows={4}
+          />
+        )}
       </div>
 
       {audioUrl && (
@@ -316,40 +343,8 @@ export function VoiceInput() {
       )}
 
       <Button
-        onClick={checkPronunciation}
-        disabled={!transcript.trim() || !target.trim()}
-        className="w-full"
-        size="lg"
-      >
-        Submit for Pronunciation Check
-      </Button>
-
-      {diff && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Result</label>
-          <div className="rounded-md border border-border bg-card p-4 leading-relaxed">
-            {diff.map((w, i) => (
-              <span
-                key={i}
-                className={cn(
-                  "mr-1.5 inline-block font-medium",
-                  w.ok ? "text-foreground" : "text-destructive underline decoration-wavy",
-                )}
-              >
-                {w.word}
-              </span>
-            ))}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {diff.filter((w) => w.ok).length} / {diff.length} words matched
-          </div>
-        </div>
-      )}
-
-      <Button
         onClick={analyzeWithAI}
-        disabled={!transcript.trim() || !target.trim() || analyzing}
-        variant="secondary"
+        disabled={!transcript.trim() || analyzing}
         className="w-full"
         size="lg"
       >
