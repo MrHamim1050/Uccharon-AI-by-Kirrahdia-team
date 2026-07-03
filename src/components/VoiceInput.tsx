@@ -59,6 +59,7 @@ const LANGUAGES: { code: string; label: string }[] = [
   { code: "ru", label: "Russian" },
   { code: "tr", label: "Turkish" },
   { code: "pl", label: "Polish" },
+  { code: "bn", label: "Bangla" },
 ];
 
 export function VoiceInput() {
