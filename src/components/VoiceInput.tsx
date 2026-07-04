@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Mic, Square, Loader2, Sparkles } from "lucide-react";
+import { Mic, Square, Loader2, Sparkles, Shuffle, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -17,6 +17,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import {
+  SENTENCE_BANK,
+  randomSentence,
+  type Level,
+  type TargetSentence,
+} from "@/lib/sentence-bank";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
 
