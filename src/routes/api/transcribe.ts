@@ -26,7 +26,9 @@ export const Route = createFileRoute("/api/transcribe")({
         upstream.append("file", file, file.name || "recording.webm");
         upstream.append("model", "openai/gpt-4o-mini-transcribe");
         if (typeof language === "string" && language && language !== "auto") {
-          upstream.append("language", language);
+          // Map dialect codes (e.g. bn-sylheti) to base ISO-639-1 for the ASR
+          const base = language.split("-")[0];
+          if (base === "bn" || base === "en") upstream.append("language", base);
         }
 
 

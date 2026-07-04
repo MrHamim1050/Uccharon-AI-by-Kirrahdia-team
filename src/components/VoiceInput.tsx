@@ -44,22 +44,13 @@ function pickExt(mime: string) {
 
 const LANGUAGES: { code: string; label: string }[] = [
   { code: "auto", label: "Auto-detect" },
+  { code: "bn", label: "Standard Bangla (বাংলা)" },
+  { code: "bn-sylheti", label: "Sylheti (সিলেটি)" },
+  { code: "bn-chattogramia", label: "Chattogramia (চাটগাঁইয়া)" },
+  { code: "bn-noakhailla", label: "Noakhailla (নোয়াখাইল্লা)" },
+  { code: "bn-rangpuri", label: "Rangpuri (রংপুরী)" },
+  { code: "bn-barishailla", label: "Barishailla (বরিশাইল্লা)" },
   { code: "en", label: "English" },
-  { code: "es", label: "Spanish" },
-  { code: "fr", label: "French" },
-  { code: "de", label: "German" },
-  { code: "it", label: "Italian" },
-  { code: "pt", label: "Portuguese" },
-  { code: "nl", label: "Dutch" },
-  { code: "hi", label: "Hindi" },
-  { code: "zh", label: "Chinese" },
-  { code: "ja", label: "Japanese" },
-  { code: "ko", label: "Korean" },
-  { code: "ar", label: "Arabic" },
-  { code: "ru", label: "Russian" },
-  { code: "tr", label: "Turkish" },
-  { code: "pl", label: "Polish" },
-  { code: "bn", label: "Bangla" },
 ];
 
 export function VoiceInput() {
