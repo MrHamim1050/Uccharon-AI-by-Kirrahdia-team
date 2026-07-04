@@ -61,6 +61,8 @@ const LANGUAGES: { code: string; label: string }[] = [
 
 export function VoiceInput() {
   const [language, setLanguage] = useState<string>("auto");
+  const [level, setLevel] = useState<Level>("beginner");
+  const [target, setTarget] = useState<TargetSentence>(() => randomSentence("beginner"));
   const [status, setStatus] = useState<Status>("idle");
   const [transcript, setTranscript] = useState("");
   const [elapsedMs, setElapsedMs] = useState(0);
