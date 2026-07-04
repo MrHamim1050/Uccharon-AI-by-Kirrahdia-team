@@ -230,7 +230,7 @@ export function VoiceInput() {
       const res = await fetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript, language }),
+        body: JSON.stringify({ transcript, language, target: target.text, targetMeaning: target.meaning }),
       });
       if (!res.ok) {
         const t = await res.text();
