@@ -284,6 +284,76 @@ export function VoiceInput() {
           </SelectContent>
         </Select>
       </div>
+
+      <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <BookOpen className="h-4 w-4" />
+            Target sentence
+          </div>
+          <div className="flex items-center gap-2">
+            <Select
+              value={level}
+              onValueChange={(v) => {
+                const lv = v as Level;
+                setLevel(lv);
+                setTarget(randomSentence(lv));
+              }}
+              disabled={isRecording || isBusy}
+            >
+              <SelectTrigger className="w-36 h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={target.id}
+              onValueChange={(id) => {
+                const s = SENTENCE_BANK.find((x) => x.id === id);
+                if (s) {
+                  setTarget(s);
+                  setLevel(s.level);
+                }
+              }}
+              disabled={isRecording || isBusy}
+            >
+              <SelectTrigger className="w-40 h-8 text-xs">
+                <SelectValue placeholder="Pick sentence" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {SENTENCE_BANK.filter((s) => s.level === level).map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    <span className="truncate max-w-[220px] inline-block align-middle">{s.text}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 px-2"
+              onClick={() => setTarget(randomSentence(level, target.id))}
+              disabled={isRecording || isBusy}
+              aria-label="Shuffle sentence"
+            >
+              <Shuffle className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <div className="text-xl leading-relaxed font-medium text-foreground">
+            {target.text}
+          </div>
+          <div className="text-sm text-muted-foreground italic">{target.translit}</div>
+          <div className="text-xs text-muted-foreground">{target.meaning}</div>
+        </div>
+      </div>
+
       <div className="flex flex-col items-center gap-4">
         <button
           onClick={isRecording ? stopRecording : startRecording}
