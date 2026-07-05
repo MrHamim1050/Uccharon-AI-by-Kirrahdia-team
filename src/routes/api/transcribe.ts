@@ -25,6 +25,11 @@ export const Route = createFileRoute("/api/transcribe")({
         const upstream = new FormData();
         upstream.append("file", file, file.name || "recording.webm");
         upstream.append("model", "openai/gpt-4o-mini-transcribe");
+        // Bias detection to English / Standard Bangla / regional Bangla dialects only.
+        upstream.append(
+          "prompt",
+          "This audio is in English, Standard Bangla (বাংলা), or a regional Bangla dialect such as Sylheti, Chattogramia, Noakhailla, Rangpuri, or Barishailla. Transcribe only as English or Bangla script.",
+        );
         if (typeof language === "string" && language && language !== "auto") {
           // Map dialect codes (e.g. bn-sylheti) to base ISO-639-1 for the ASR
           const base = language.split("-")[0];

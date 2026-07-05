@@ -62,7 +62,9 @@ const LANGUAGES: { code: string; label: string }[] = [
 export function VoiceInput() {
   const [language, setLanguage] = useState<string>("auto");
   const [level, setLevel] = useState<Level>("beginner");
-  const [target, setTarget] = useState<TargetSentence>(() => randomSentence("beginner"));
+  const [target, setTarget] = useState<TargetSentence>(
+    () => SENTENCE_BANK.find((s) => s.level === "beginner") ?? SENTENCE_BANK[0],
+  );
   const [status, setStatus] = useState<Status>("idle");
   const [transcript, setTranscript] = useState("");
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -82,6 +84,8 @@ export function VoiceInput() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    // Randomize after mount to avoid SSR hydration mismatch
+    setTarget((cur) => randomSentence("beginner", cur.id));
     return () => stopEverything();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -308,28 +312,6 @@ export function VoiceInput() {
                 <SelectItem value="beginner">Beginner</SelectItem>
                 <SelectItem value="intermediate">Intermediate</SelectItem>
                 <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={target.id}
-              onValueChange={(id) => {
-                const s = SENTENCE_BANK.find((x) => x.id === id);
-                if (s) {
-                  setTarget(s);
-                  setLevel(s.level);
-                }
-              }}
-              disabled={isRecording || isBusy}
-            >
-              <SelectTrigger className="w-40 h-8 text-xs">
-                <SelectValue placeholder="Pick sentence" />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {SENTENCE_BANK.filter((s) => s.level === level).map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    <span className="truncate max-w-[220px] inline-block align-middle">{s.text}</span>
-                  </SelectItem>
-                ))}
               </SelectContent>
             </Select>
             <Button
