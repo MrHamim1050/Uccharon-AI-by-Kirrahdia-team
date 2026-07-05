@@ -314,28 +314,6 @@ export function VoiceInput() {
                 <SelectItem value="advanced">Advanced</SelectItem>
               </SelectContent>
             </Select>
-            <Select
-              value={target.id}
-              onValueChange={(id) => {
-                const s = SENTENCE_BANK.find((x) => x.id === id);
-                if (s) {
-                  setTarget(s);
-                  setLevel(s.level);
-                }
-              }}
-              disabled={isRecording || isBusy}
-            >
-              <SelectTrigger className="w-40 h-8 text-xs">
-                <SelectValue placeholder="Pick sentence" />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {SENTENCE_BANK.filter((s) => s.level === level).map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    <span className="truncate max-w-[220px] inline-block align-middle">{s.text}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Button
               type="button"
               variant="outline"
