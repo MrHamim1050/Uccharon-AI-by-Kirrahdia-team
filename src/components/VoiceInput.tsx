@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Mic, Square, Loader2, Sparkles, Shuffle, BookOpen } from "lucide-react";
+import { Mic, Square, Loader2, Sparkles, Shuffle, BookOpen, RotateCcw, Share2, Download, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -9,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -59,6 +60,89 @@ const LANGUAGES: { code: string; label: string }[] = [
   { code: "en", label: "English" },
 ];
 
+const LEVEL_BADGE: Record<Level, string> = {
+  beginner: "bg-success/15 text-success border-success/30",
+  intermediate: "bg-warning/15 text-warning border-warning/30",
+  advanced: "bg-destructive/15 text-destructive border-destructive/30",
+};
+
+function AnimatedCounter({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    const start = performance.now();
+    const from = 0;
+    const dur = 900;
+    let raf = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplay(Math.round(from + (value - from) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+  return <>{display}</>;
+}
+
+function ScoreRing({ score }: { score: number }) {
+  const size = 160;
+  const stroke = 12;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(100, score)) / 100;
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <defs>
+          <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="oklch(0.6 0.22 285)" />
+            <stop offset="100%" stopColor="oklch(0.72 0.2 320)" />
+          </linearGradient>
+        </defs>
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="currentColor" strokeOpacity={0.1} strokeWidth={stroke} fill="none" />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke="url(#scoreGrad)"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          fill="none"
+          initial={{ strokeDasharray: `0 ${c}` }}
+          animate={{ strokeDasharray: `${pct * c} ${c}` }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="font-numeric text-5xl font-bold text-gradient leading-none">
+          <AnimatedCounter value={score} />
+        </div>
+        <div className="text-xs text-muted-foreground mt-1">/ 100</div>
+      </div>
+    </div>
+  );
+}
+
+function MetricBar({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-numeric font-semibold">{Math.round(value)}%</span>
+      </div>
+      <div className="h-2 w-full rounded-full bg-muted/70 overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="h-full rounded-full bg-gradient-primary"
+        />
+      </div>
+    </div>
+  );
+}
+
 export function VoiceInput() {
   const [language, setLanguage] = useState<string>("auto");
   const [level, setLevel] = useState<Level>("beginner");
@@ -84,11 +168,22 @@ export function VoiceInput() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    // Randomize after mount to avoid SSR hydration mismatch
     setTarget((cur) => randomSentence("beginner", cur.id));
     return () => stopEverything();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Confetti when score > 90
+  useEffect(() => {
+    if (analysis?.score && analysis.score > 90) {
+      const end = Date.now() + 800;
+      const burst = () => {
+        confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ["#a855f7", "#ec4899", "#6366f1", "#f0abfc"] });
+        if (Date.now() < end) setTimeout(burst, 250);
+      };
+      burst();
+    }
+  }, [analysis]);
 
   function stopEverything() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -125,9 +220,13 @@ export function VoiceInput() {
       analyser.getByteTimeDomainData(dataArray);
       ctx.clearRect(0, 0, w, h);
 
-      const bars = 48;
+      const bars = 56;
       const step = Math.floor(bufferLength / bars);
       const barW = w / bars;
+      const grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, "oklch(0.6 0.22 285)");
+      grad.addColorStop(1, "oklch(0.72 0.2 320)");
+      ctx.fillStyle = grad;
       for (let i = 0; i < bars; i++) {
         let sum = 0;
         for (let j = 0; j < step; j++) {
@@ -135,10 +234,19 @@ export function VoiceInput() {
           sum += v * v;
         }
         const rms = Math.sqrt(sum / step);
-        const barH = Math.max(3, rms * h * 2.5);
+        const barH = Math.max(4, rms * h * 2.6);
         const y = (h - barH) / 2;
-        ctx.fillStyle = `oklch(0.55 0.2 264)`;
-        ctx.fillRect(i * barW + barW * 0.15, y, barW * 0.7, barH);
+        const x = i * barW + barW * 0.2;
+        const bw = barW * 0.6;
+        const r = bw / 2;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + bw, y, x + bw, y + barH, r);
+        ctx.arcTo(x + bw, y + barH, x, y + barH, r);
+        ctx.arcTo(x, y + barH, x, y, r);
+        ctx.arcTo(x, y, x + bw, y, r);
+        ctx.closePath();
+        ctx.fill();
       }
     };
     render();
@@ -249,7 +357,21 @@ export function VoiceInput() {
     }
   }
 
-  // Map normalized issue word -> Issue for hover lookup
+  function resetPractice() {
+    setTranscript("");
+    setAnalysis(null);
+    setError(null);
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+      setAudioUrl(null);
+    }
+  }
+
+  function nextSentence() {
+    setTarget((cur) => randomSentence(level, cur.id));
+    resetPractice();
+  }
+
   const issueMap = useMemo(() => {
     const map = new Map<string, Issue>();
     analysis?.issues?.forEach((iss) => {
@@ -259,11 +381,10 @@ export function VoiceInput() {
     return map;
   }, [analysis]);
 
-  // Split transcript into tokens with whitespace preserved
   const tokens = useMemo(() => {
     if (!transcript) return [] as { text: string; isWord: boolean }[];
-    const parts = transcript.split(/(\s+)/);
-    return parts
+    return transcript
+      .split(/(\s+)/)
       .filter((p) => p.length > 0)
       .map((p) => ({ text: p, isWord: !/^\s+$/.test(p) }));
   }, [transcript]);
@@ -271,244 +392,326 @@ export function VoiceInput() {
   const seconds = (elapsedMs / 1000).toFixed(1);
   const isRecording = status === "recording";
   const isBusy = status === "transcribing";
-  const hasIssues = (analysis?.issues?.length ?? 0) > 0;
+  const hasAnalysis = !!analysis;
+  const score = analysis?.score ?? 0;
+
+  // Derived sub-metrics (visual only, based on the single overall score)
+  const submetrics = useMemo(() => {
+    const base = score || 0;
+    const clamp = (n: number) => Math.max(0, Math.min(100, n));
+    return {
+      Pronunciation: clamp(base),
+      Accuracy: clamp(base - 3),
+      Fluency: clamp(base + 2),
+      Confidence: clamp(base - 5),
+    };
+  }, [score]);
 
   return (
-    <Card className="w-full max-w-2xl mx-auto p-8 space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <label className="text-sm font-medium text-muted-foreground">Language</label>
-        <Select value={language} onValueChange={setLanguage} disabled={isRecording || isBusy}>
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {LANGUAGES.map((l) => (
-              <SelectItem key={l.code} value={l.code}>{l.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <BookOpen className="h-4 w-4" />
-            Target sentence
-          </div>
-          <div className="flex items-center gap-2">
-            <Select
-              value={level}
-              onValueChange={(v) => {
-                const lv = v as Level;
-                setLevel(lv);
-                setTarget(randomSentence(lv));
-              }}
-              disabled={isRecording || isBusy}
-            >
-              <SelectTrigger className="w-36 h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-8 px-2"
-              onClick={() => setTarget(randomSentence(level, target.id))}
-              disabled={isRecording || isBusy}
-              aria-label="Shuffle sentence"
-            >
-              <Shuffle className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-        <div className="space-y-1">
-          <div className="text-xl leading-relaxed font-medium text-foreground">
-            {target.text}
-          </div>
-          <div className="text-sm text-muted-foreground italic">{target.translit}</div>
-          <div className="text-xs text-muted-foreground">{target.meaning}</div>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center gap-4">
-        <button
-          onClick={isRecording ? stopRecording : startRecording}
-          disabled={isBusy}
-          aria-label={isRecording ? "Stop recording" : "Start recording"}
-          className={cn(
-            "relative flex h-28 w-28 items-center justify-center rounded-full transition-all",
-            "shadow-lg hover:scale-105 active:scale-95",
-            isRecording
-              ? "bg-destructive text-destructive-foreground"
-              : "bg-primary text-primary-foreground",
-            isBusy && "opacity-60 cursor-not-allowed",
-          )}
-        >
-          {isRecording && (
-            <span className="absolute inset-0 rounded-full bg-destructive/40 animate-ping" />
-          )}
-          {isBusy ? (
-            <Loader2 className="h-10 w-10 animate-spin" />
-          ) : isRecording ? (
-            <Square className="h-10 w-10 fill-current" />
-          ) : (
-            <Mic className="h-10 w-10" />
-          )}
-        </button>
-
-        <div className="h-16 w-full rounded-lg bg-muted/50 border border-border overflow-hidden">
-          <canvas ref={canvasRef} className="h-full w-full" />
+    <div className="w-full max-w-2xl mx-auto space-y-6">
+      <div className="glass rounded-3xl p-6 sm:p-8 space-y-6">
+        {/* Language */}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <label className="text-sm font-medium text-muted-foreground min-w-0">Detection language</label>
+          <Select value={language} onValueChange={setLanguage} disabled={isRecording || isBusy}>
+            <SelectTrigger className="w-52 rounded-xl border-border/60 bg-background/50 backdrop-blur">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              {LANGUAGES.map((l) => (
+                <SelectItem key={l.code} value={l.code}>{l.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="font-mono text-lg tabular-nums text-foreground">
-          {isRecording ? `● ${seconds}s` : isBusy ? "Transcribing…" : `${seconds}s`}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-muted-foreground">Transcription</label>
-          {hasIssues && (
-            <span className="text-xs text-muted-foreground">
-              Hover the <span className="text-destructive font-medium">red</span> words for tips
-            </span>
-          )}
-        </div>
-
-        {hasIssues ? (
-          <TooltipProvider delayDuration={100}>
-            <div className="min-h-[96px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm leading-relaxed">
-              {tokens.map((tok, i) => {
-                if (!tok.isWord) return <span key={i}>{tok.text}</span>;
-                const key = normalizeWord(tok.text);
-                const iss = issueMap.get(key);
-                if (!iss) return <span key={i}>{tok.text}</span>;
-                return (
-                  <Tooltip key={i}>
-                    <TooltipTrigger asChild>
-                      <span className="text-destructive font-semibold underline decoration-wavy decoration-destructive/70 underline-offset-4 cursor-help">
-                        {tok.text}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs space-y-1">
-                      <div className="font-semibold">{iss.word}</div>
-                      <div>{iss.problem}</div>
-                      <div className="italic opacity-80">💡 {iss.tip}</div>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
+        {/* Target sentence card */}
+        <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent p-5">
+          <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-primary opacity-10 blur-2xl" />
+          <div className="relative flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <BookOpen className="h-3.5 w-3.5" />
+              Today's Sentence
+              <span className={cn("ml-1 rounded-full border px-2 py-0.5 text-[10px] font-medium", LEVEL_BADGE[target.level])}>
+                {target.level}
+              </span>
             </div>
-          </TooltipProvider>
-        ) : (
-          <Textarea
-            value={transcript}
-            onChange={(e) => setTranscript(e.target.value)}
-            placeholder="Your transcribed speech will appear here…"
-            rows={4}
-          />
-        )}
-      </div>
-
-      {audioUrl && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Playback your recording
-          </label>
-          <audio
-            src={audioUrl}
-            controls
-            className="w-full rounded-md bg-muted/40 border border-border"
-          />
-        </div>
-      )}
-
-      {error && (
-        <div className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2">
-          {error}
-        </div>
-      )}
-
-      <Button
-        onClick={analyzeWithAI}
-        disabled={!transcript.trim() || analyzing}
-        className="w-full"
-        size="lg"
-      >
-        {analyzing ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" /> Analyzing…
-          </>
-        ) : (
-          <>
-            <Sparkles className="h-4 w-4" /> Get AI Pronunciation Analysis
-          </>
-        )}
-      </Button>
-
-      {analysis && (
-        <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-muted-foreground">AI Analysis</label>
-            {typeof analysis.score === "number" && (
-              <div className="text-2xl font-bold tabular-nums text-primary">
-                {analysis.score}
-                <span className="text-sm text-muted-foreground font-normal">/100</span>
+            <div className="flex items-center gap-2">
+              <Select
+                value={level}
+                onValueChange={(v) => {
+                  const lv = v as Level;
+                  setLevel(lv);
+                  setTarget(randomSentence(lv));
+                }}
+                disabled={isRecording || isBusy}
+              >
+                <SelectTrigger className="w-36 h-8 text-xs rounded-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beginner">Beginner</SelectItem>
+                  <SelectItem value="intermediate">Intermediate</SelectItem>
+                  <SelectItem value="advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg"
+                onClick={() => setTarget(randomSentence(level, target.id))}
+                disabled={isRecording || isBusy}
+                aria-label="Shuffle sentence"
+              >
+                <Shuffle className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={target.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35 }}
+              className="relative space-y-1"
+            >
+              <div className="font-display text-2xl sm:text-3xl leading-relaxed font-semibold">
+                {target.text}
               </div>
+              <div className="text-sm text-primary/90 italic">{target.translit}</div>
+              <div className="text-xs text-muted-foreground">{target.meaning}</div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Mic */}
+        <div className="flex flex-col items-center gap-5 py-2">
+          <div className="relative">
+            {isRecording && (
+              <>
+                <span className="absolute inset-0 rounded-full bg-destructive/30 animate-ping" />
+                <span className="absolute -inset-3 rounded-full border border-destructive/40 animate-ping" style={{ animationDelay: "0.3s" }} />
+                <span className="absolute -inset-6 rounded-full border border-destructive/20 animate-ping" style={{ animationDelay: "0.6s" }} />
+              </>
+            )}
+            <motion.button
+              whileTap={{ scale: 0.94 }}
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isBusy}
+              aria-label={isRecording ? "Stop recording" : "Start recording"}
+              className={cn(
+                "relative grid h-32 w-32 place-items-center rounded-full text-primary-foreground transition-colors",
+                isRecording ? "bg-destructive" : "bg-gradient-primary shadow-glow",
+                !isRecording && !isBusy && "animate-breathe",
+                isBusy && "opacity-60 cursor-not-allowed",
+              )}
+            >
+              {isBusy ? (
+                <Loader2 className="h-11 w-11 animate-spin" />
+              ) : isRecording ? (
+                <Square className="h-10 w-10 fill-current" />
+              ) : (
+                <Mic className="h-12 w-12" strokeWidth={2} />
+              )}
+            </motion.button>
+          </div>
+
+          <div className="h-20 w-full rounded-2xl bg-muted/40 border border-border/60 overflow-hidden backdrop-blur">
+            <canvas ref={canvasRef} className="h-full w-full" />
+          </div>
+
+          <div className="flex items-center gap-3">
+            {isRecording && <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />}
+            <div className="font-numeric text-lg tabular-nums">
+              {isRecording ? `Listening · ${seconds}s` : isBusy ? "Transcribing…" : `${seconds}s`}
+            </div>
+          </div>
+        </div>
+
+        {/* Transcription */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-muted-foreground">Your transcription</label>
+            {(analysis?.issues?.length ?? 0) > 0 && (
+              <span className="text-xs text-muted-foreground">
+                Hover the <span className="text-destructive font-medium">red</span> words for tips
+              </span>
             )}
           </div>
 
-          {analysis.overall && (
-            <p className="text-sm text-foreground leading-relaxed">{analysis.overall}</p>
-          )}
-
-          {analysis.strengths && analysis.strengths.length > 0 && (
-            <div className="space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Strengths
+          {(analysis?.issues?.length ?? 0) > 0 ? (
+            <TooltipProvider delayDuration={100}>
+              <div className="min-h-[96px] w-full rounded-2xl border border-border/60 bg-background/40 backdrop-blur px-4 py-3 text-base leading-relaxed">
+                {tokens.map((tok, i) => {
+                  if (!tok.isWord) return <span key={i}>{tok.text}</span>;
+                  const key = normalizeWord(tok.text);
+                  const iss = issueMap.get(key);
+                  if (!iss)
+                    return (
+                      <span key={i} className="text-success/90">
+                        {tok.text}
+                      </span>
+                    );
+                  return (
+                    <Tooltip key={i}>
+                      <TooltipTrigger asChild>
+                        <span className="text-destructive font-semibold underline decoration-wavy decoration-destructive/70 underline-offset-4 cursor-help">
+                          {tok.text}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs space-y-1">
+                        <div className="font-semibold">{iss.word}</div>
+                        <div>{iss.problem}</div>
+                        <div className="italic opacity-80">💡 {iss.tip}</div>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
               </div>
-              <ul className="list-disc list-inside text-sm space-y-0.5">
-                {analysis.strengths.map((s, i) => (
-                  <li key={i}>{s}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {analysis.issues && analysis.issues.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Areas to improve
-              </div>
-              <ul className="space-y-2">
-                {analysis.issues.map((iss, i) => (
-                  <li
-                    key={i}
-                    className="rounded-md border border-border bg-card p-3 text-sm space-y-1"
-                  >
-                    <div className="font-semibold text-destructive">{iss.word}</div>
-                    <div className="text-foreground">{iss.problem}</div>
-                    <div className="text-muted-foreground italic">💡 {iss.tip}</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {analysis.practiceTip && (
-            <div className="text-sm border-t border-border pt-3">
-              <span className="font-semibold">Next: </span>
-              {analysis.practiceTip}
-            </div>
+            </TooltipProvider>
+          ) : (
+            <Textarea
+              value={transcript}
+              onChange={(e) => setTranscript(e.target.value)}
+              placeholder="Your transcribed speech will appear here…"
+              rows={4}
+              className="rounded-2xl bg-background/40 backdrop-blur border-border/60 text-base"
+            />
           )}
         </div>
-      )}
-    </Card>
+
+        {audioUrl && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground">Playback</label>
+            <audio src={audioUrl} controls className="w-full rounded-xl bg-muted/40 border border-border/60" />
+          </div>
+        )}
+
+        {error && (
+          <div className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-xl px-4 py-3">
+            {error}
+          </div>
+        )}
+
+        <motion.button
+          whileHover={{ scale: transcript.trim() && !analyzing ? 1.01 : 1 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={analyzeWithAI}
+          disabled={!transcript.trim() || analyzing}
+          className={cn(
+            "relative flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-semibold text-primary-foreground shadow-glow overflow-hidden",
+            "bg-gradient-primary animate-gradient",
+            (!transcript.trim() || analyzing) && "opacity-60 cursor-not-allowed",
+          )}
+        >
+          {analyzing && (
+            <span
+              className="absolute inset-0 opacity-40"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                backgroundSize: "200% 100%",
+                animation: "shimmer 1.4s linear infinite",
+              }}
+            />
+          )}
+          <span className="relative flex items-center gap-2">
+            {analyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+            {analyzing ? "Analyzing your pronunciation…" : "Analyze My Pronunciation"}
+          </span>
+        </motion.button>
+      </div>
+
+      {/* Analysis dashboard */}
+      <AnimatePresence>
+        {hasAnalysis && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.5 }}
+            className="glass rounded-3xl p-6 sm:p-8 space-y-6"
+          >
+            <div className="grid gap-6 sm:grid-cols-[auto_minmax(0,1fr)] items-center">
+              <div className="justify-self-center">
+                <ScoreRing score={score} />
+              </div>
+              <div className="space-y-3">
+                <MetricBar label="Pronunciation" value={submetrics.Pronunciation} />
+                <MetricBar label="Accuracy" value={submetrics.Accuracy} />
+                <MetricBar label="Fluency" value={submetrics.Fluency} />
+                <MetricBar label="Confidence" value={submetrics.Confidence} />
+              </div>
+            </div>
+
+            {analysis?.overall && (
+              <div className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 text-sm leading-relaxed">
+                <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">AI Coach</div>
+                {analysis.overall}
+              </div>
+            )}
+
+            {analysis?.strengths && analysis.strengths.length > 0 && (
+              <div className="space-y-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-success">Strengths</div>
+                <ul className="space-y-1.5">
+                  {analysis.strengths.map((s, i) => (
+                    <li key={i} className="flex gap-2 text-sm">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-success" />
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {analysis?.issues && analysis.issues.length > 0 && (
+              <div className="space-y-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-destructive">Areas to improve</div>
+                <ul className="grid gap-2 sm:grid-cols-2">
+                  {analysis.issues.map((iss, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 text-sm space-y-1"
+                    >
+                      <div className="font-display font-semibold text-destructive">{iss.word}</div>
+                      <div>{iss.problem}</div>
+                      <div className="text-muted-foreground italic">💡 {iss.tip}</div>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {analysis?.practiceTip && (
+              <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
+                <span className="font-semibold text-primary">Practice tip: </span>
+                {analysis.practiceTip}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+              <Button variant="outline" className="rounded-xl" onClick={resetPractice}>
+                <RotateCcw className="h-4 w-4" /> Practice Again
+              </Button>
+              <Button className="rounded-xl bg-gradient-primary text-primary-foreground shadow-glow" onClick={nextSentence}>
+                <ArrowRight className="h-4 w-4" /> Next Sentence
+              </Button>
+              <Button variant="outline" className="rounded-xl" disabled>
+                <Share2 className="h-4 w-4" /> Share Score
+              </Button>
+              <Button variant="outline" className="rounded-xl" disabled>
+                <Download className="h-4 w-4" /> Report
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
