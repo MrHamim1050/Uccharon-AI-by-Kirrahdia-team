@@ -84,6 +84,8 @@ export function VoiceInput() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    // Randomize after mount to avoid SSR hydration mismatch
+    setTarget((cur) => randomSentence("beginner", cur.id));
     return () => stopEverything();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
