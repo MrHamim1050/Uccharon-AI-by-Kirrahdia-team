@@ -42,12 +42,13 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
           });
         }
 
-        const { transcript, altTranscript, language, target, targetMeaning } = (await request.json()) as {
+        const { transcript, altTranscript, language, target, targetMeaning, outputLang } = (await request.json()) as {
           transcript?: string;
           altTranscript?: string;
           language?: string;
           target?: string;
           targetMeaning?: string;
+          outputLang?: "en" | "bn";
         };
         if (!transcript || !transcript.trim()) {
           return new Response(JSON.stringify({ error: "transcript required" }), {
