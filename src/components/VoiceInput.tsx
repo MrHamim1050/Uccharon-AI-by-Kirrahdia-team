@@ -429,9 +429,47 @@ export function VoiceInput() {
     resetPractice();
   }
 
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsUrlRef = useRef<string | null>(null);
+
+  const playServerTTS = useCallback(async (text: string) => {
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      if (ttsUrlRef.current) URL.revokeObjectURL(ttsUrlRef.current);
+      const url = URL.createObjectURL(blob);
+      ttsUrlRef.current = url;
+      const audio = new Audio(url);
+      ttsAudioRef.current = audio;
+      await audio.play().catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   const speakSentence = useCallback((text: string) => {
     if (!text) return;
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    // Stop any in-flight audio.
+    if (ttsAudioRef.current) {
+      try { ttsAudioRef.current.pause(); } catch { /* ignore */ }
+      ttsAudioRef.current = null;
+    }
+    // Languages where browser SpeechSynthesis rarely has voices — go straight
+    // to the server TTS so playback actually works.
+    const serverOnly: LanguageCode[] = ["bn", "ur", "ar"];
+    if (serverOnly.includes(primaryLang)) {
+      void playServerTTS(text);
+      return;
+    }
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      void playServerTTS(text);
+      return;
+    }
     try {
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
@@ -440,12 +478,18 @@ export function VoiceInput() {
       const voices = window.speechSynthesis.getVoices();
       const match = voices.find((v) => v.lang?.toLowerCase().startsWith(utter.lang.toLowerCase())) ||
         voices.find((v) => v.lang?.toLowerCase().startsWith(primaryLang));
-      if (match) utter.voice = match;
-      window.speechSynthesis.speak(utter);
+      if (match) {
+        utter.voice = match;
+        window.speechSynthesis.speak(utter);
+      } else {
+        // No matching browser voice — fall back to server TTS.
+        void playServerTTS(text);
+      }
     } catch {
-      /* ignore */
+      void playServerTTS(text);
     }
-  }, [primaryLang]);
+  }, [primaryLang, playServerTTS]);
+
 
 
   const issueMap = useMemo(() => {
