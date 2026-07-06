@@ -372,9 +372,10 @@ export function VoiceInput() {
   }
 
   function nextSentence() {
-    setTarget((cur) => randomSentence(level, cur.id));
+    setTarget((cur) => randomSentence(primaryLang, level, cur.id));
     resetPractice();
   }
+
 
   const issueMap = useMemo(() => {
     const map = new Map<string, Issue>();
