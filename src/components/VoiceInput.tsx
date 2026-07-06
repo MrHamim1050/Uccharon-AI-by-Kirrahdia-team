@@ -803,6 +803,33 @@ export function VoiceInput() {
               </div>
             </div>
 
+            {adaptiveSuggestion && (
+              <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
+                <TrendingUp className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                <div>
+                  <div className="font-semibold text-primary">Adaptive tip</div>
+                  {adaptiveSuggestion}
+                </div>
+              </div>
+            )}
+
+            {recurringIssues.length > 0 && (
+              <div className="space-y-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-warning">Recurring issues</div>
+                <div className="flex flex-wrap gap-2">
+                  {recurringIssues.map((ri, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-medium text-warning"
+                    >
+                      <AlertCircle className="h-3 w-3" />
+                      {ri.pattern} · {ri.count}×
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {analysis?.overall && (
               <div className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 text-sm leading-relaxed">
                 <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">AI Coach</div>
