@@ -72,7 +72,14 @@ export type TargetSentence = {
   level: Level;
 };
 
-type Bank = Record<LanguageCode, Record<Level, TargetSentence[]>>;
+type Bank = Record<LanguageCode, Partial<Record<Level, TargetSentence[]>>>;
+
+const FREESTYLE_SENTENCE: TargetSentence = {
+  id: "freestyle",
+  level: "freestyle",
+  text: "",
+  meaning: "Speak freely — no target sentence.",
+};
 
 export const SENTENCE_BANK: Bank = {
   en: {
