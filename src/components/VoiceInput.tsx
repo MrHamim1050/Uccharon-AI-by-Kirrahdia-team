@@ -154,6 +154,7 @@ export function VoiceInput() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [outputLang, setOutputLang] = useState<"en" | "bn">("bn");
 
   // Compose the language code sent to the backend (e.g. "bn-sylheti" or "en").
   const language = useMemo(() => {
@@ -177,6 +178,11 @@ export function VoiceInput() {
     return () => stopEverything();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // When switching UI language, default the analysis-output language to match.
+  useEffect(() => {
+    setOutputLang(primaryLang === "bn" ? "bn" : "en");
+  }, [primaryLang]);
 
 
   // Confetti when score > 90
@@ -342,14 +348,15 @@ export function VoiceInput() {
     }
   }
 
-  async function analyzeWithAI() {
+  async function analyzeWithAI(langOverride?: "en" | "bn") {
+    const lang = langOverride ?? outputLang;
     setAnalyzing(true);
     setError(null);
     try {
       const res = await fetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning }),
+        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning, outputLang: lang }),
       });
       if (!res.ok) {
         const t = await res.text();
@@ -552,13 +559,16 @@ export function VoiceInput() {
                 transition={{ duration: 0.35 }}
                 className="relative space-y-1 mt-3"
               >
-                <div className="font-display text-2xl sm:text-3xl leading-relaxed font-semibold">
+                <div className={cn(
+                  "text-2xl sm:text-3xl leading-relaxed font-semibold",
+                  primaryLang === "bn" ? "font-bangla-main" : "font-display",
+                )}>
                   {target.text}
                 </div>
                 {target.translit && (
-                  <div className="text-sm text-primary/90 italic">{target.translit}</div>
+                  <div className={cn("text-sm text-primary/90 italic", primaryLang === "bn" && "font-bangla-side")}>{target.translit}</div>
                 )}
-                <div className="text-xs text-muted-foreground">{target.meaning}</div>
+                <div className={cn("text-xs text-muted-foreground", primaryLang === "bn" && "font-bangla-side")}>{target.meaning}</div>
               </motion.div>
             </AnimatePresence>
           )}
@@ -641,7 +651,7 @@ export function VoiceInput() {
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-xs space-y-1">
-                        <div className="font-semibold">{iss.word}</div>
+                        <div className={cn("font-semibold", primaryLang === "bn" && "font-bangla-main")}>{iss.word}</div>
                         <div>{iss.problem}</div>
                         <div className="italic opacity-80">💡 {iss.tip}</div>
                       </TooltipContent>
@@ -677,7 +687,7 @@ export function VoiceInput() {
         <motion.button
           whileHover={{ scale: transcript.trim() && !analyzing ? 1.01 : 1 }}
           whileTap={{ scale: 0.99 }}
-          onClick={analyzeWithAI}
+          onClick={() => analyzeWithAI()}
           disabled={!transcript.trim() || analyzing}
           className={cn(
             "relative flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-semibold text-primary-foreground shadow-glow overflow-hidden",
@@ -713,6 +723,35 @@ export function VoiceInput() {
             transition={{ duration: 0.5 }}
             className="glass rounded-3xl p-6 sm:p-8 space-y-6"
           >
+            {/* Output language toggle */}
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/40 backdrop-blur px-4 py-2">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Feedback language
+              </div>
+              <div className="inline-flex rounded-full border border-border/60 bg-muted/40 p-0.5 text-xs font-medium">
+                {(["bn", "en"] as const).map((lc) => (
+                  <button
+                    key={lc}
+                    type="button"
+                    onClick={() => {
+                      if (lc === outputLang || analyzing) return;
+                      setOutputLang(lc);
+                      analyzeWithAI(lc);
+                    }}
+                    className={cn(
+                      "rounded-full px-3 py-1 transition-colors",
+                      outputLang === lc
+                        ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                    disabled={analyzing}
+                  >
+                    {lc === "bn" ? "বাংলা" : "English"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid gap-6 sm:grid-cols-[auto_minmax(0,1fr)] items-center">
               <div className="justify-self-center">
                 <ScoreRing score={score} />
@@ -758,7 +797,7 @@ export function VoiceInput() {
                       transition={{ delay: i * 0.05 }}
                       className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 text-sm space-y-1"
                     >
-                      <div className="font-display font-semibold text-destructive">{iss.word}</div>
+                      <div className={cn("font-semibold text-destructive text-lg", primaryLang === "bn" ? "font-bangla-main" : "font-display")}>{iss.word}</div>
                       <div>{iss.problem}</div>
                       <div className="text-muted-foreground italic">💡 {iss.tip}</div>
                     </motion.li>
