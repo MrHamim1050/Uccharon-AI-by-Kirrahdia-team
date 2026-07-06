@@ -797,7 +797,7 @@ export function VoiceInput() {
                       transition={{ delay: i * 0.05 }}
                       className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 text-sm space-y-1"
                     >
-                      <div className="font-display font-semibold text-destructive">{iss.word}</div>
+                      <div className={cn("font-semibold text-destructive text-lg", primaryLang === "bn" ? "font-bangla-main" : "font-display")}>{iss.word}</div>
                       <div>{iss.problem}</div>
                       <div className="text-muted-foreground italic">💡 {iss.tip}</div>
                     </motion.li>
