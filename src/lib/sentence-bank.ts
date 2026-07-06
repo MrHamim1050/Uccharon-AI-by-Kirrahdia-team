@@ -246,11 +246,15 @@ export function randomSentence(
   level: Level,
   excludeId?: string,
 ): TargetSentence {
-  const pool = SENTENCE_BANK[language][level].filter((s) => s.id !== excludeId);
-  const source = pool.length > 0 ? pool : SENTENCE_BANK[language][level];
+  if (level === "freestyle") return FREESTYLE_SENTENCE;
+  const bank = SENTENCE_BANK[language][level] ?? [];
+  const pool = bank.filter((s) => s.id !== excludeId);
+  const source = pool.length > 0 ? pool : bank;
+  if (source.length === 0) return FREESTYLE_SENTENCE;
   return source[Math.floor(Math.random() * source.length)];
 }
 
 export function firstSentence(language: LanguageCode, level: Level): TargetSentence {
-  return SENTENCE_BANK[language][level][0];
+  if (level === "freestyle") return FREESTYLE_SENTENCE;
+  return SENTENCE_BANK[language][level]?.[0] ?? FREESTYLE_SENTENCE;
 }
