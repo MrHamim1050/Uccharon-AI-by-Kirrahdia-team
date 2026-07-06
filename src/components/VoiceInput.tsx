@@ -62,6 +62,7 @@ const LEVEL_BADGE: Record<Level, string> = {
   beginner: "bg-success/15 text-success border-success/30",
   intermediate: "bg-warning/15 text-warning border-warning/30",
   advanced: "bg-destructive/15 text-destructive border-destructive/30",
+  freestyle: "bg-primary/15 text-primary border-primary/30",
 };
 
 function AnimatedCounter({ value }: { value: number }) {
@@ -348,7 +349,7 @@ export function VoiceInput() {
       const res = await fetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: target.text, targetMeaning: target.meaning }),
+        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning }),
       });
       if (!res.ok) {
         const t = await res.text();
@@ -417,6 +418,22 @@ export function VoiceInput() {
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
+      <div className="text-center">
+        <motion.h1
+          key={primaryLang}
+          initial={{ y: 8, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="font-display text-3xl sm:text-4xl font-bold tracking-tight"
+        >
+          Practice <span className="text-gradient">Standard {LANGUAGE_LABELS[primaryLang]}</span>
+        </motion.h1>
+        <p className="mt-2 text-muted-foreground text-sm sm:text-base">
+          {primaryLang === "bn"
+            ? "Speak in your local dialect. Get instant AI coaching, word by word."
+            : "Speak naturally. Get instant AI pronunciation coaching, word by word."}
+        </p>
+      </div>
       <div className="glass rounded-3xl p-6 sm:p-8 space-y-6">
         {/* Language selector — two dropdowns in one box */}
         <div className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 space-y-3">
@@ -476,12 +493,12 @@ export function VoiceInput() {
         {/* Target sentence card */}
         <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent p-5">
           <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-primary opacity-10 blur-2xl" />
-          <div className="relative flex items-center justify-between gap-2 mb-3">
+          <div className="relative flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <BookOpen className="h-3.5 w-3.5" />
               {LANGUAGE_LABELS[primaryLang]} · Practice
-              <span className={cn("ml-1 rounded-full border px-2 py-0.5 text-[10px] font-medium", LEVEL_BADGE[target.level])}>
-                {target.level}
+              <span className={cn("ml-1 rounded-full border px-2 py-0.5 text-[10px] font-medium", LEVEL_BADGE[level])}>
+                {level}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -491,6 +508,7 @@ export function VoiceInput() {
                   const lv = v as Level;
                   setLevel(lv);
                   setTarget(randomSentence(primaryLang, lv));
+                  resetPractice();
                 }}
                 disabled={isRecording || isBusy}
               >
@@ -501,41 +519,51 @@ export function VoiceInput() {
                   <SelectItem value="beginner">Beginner</SelectItem>
                   <SelectItem value="intermediate">Intermediate</SelectItem>
                   <SelectItem value="advanced">Advanced</SelectItem>
+                  <SelectItem value="freestyle">Freestyle</SelectItem>
                 </SelectContent>
               </Select>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-8 rounded-lg"
-                onClick={() => setTarget(randomSentence(primaryLang, level, target.id))}
-                disabled={isRecording || isBusy}
-                aria-label="Shuffle sentence"
-              >
-                <Shuffle className="h-3.5 w-3.5" />
-              </Button>
+              {level !== "freestyle" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 rounded-lg"
+                  onClick={() => setTarget(randomSentence(primaryLang, level, target.id))}
+                  disabled={isRecording || isBusy}
+                  aria-label="Shuffle sentence"
+                >
+                  <Shuffle className="h-3.5 w-3.5" />
+                </Button>
+              )}
             </div>
           </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={target.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35 }}
-              className="relative space-y-1"
-            >
-              <div className="font-display text-2xl sm:text-3xl leading-relaxed font-semibold">
-                {target.text}
-              </div>
-              {target.translit && (
-                <div className="text-sm text-primary/90 italic">{target.translit}</div>
-              )}
-              <div className="text-xs text-muted-foreground">{target.meaning}</div>
-            </motion.div>
-          </AnimatePresence>
+          {level === "freestyle" ? (
+            <div className="relative mt-2 text-sm text-muted-foreground italic">
+              No target sentence — just speak freely in {LANGUAGE_LABELS[primaryLang]} and get AI feedback.
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={target.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.35 }}
+                className="relative space-y-1 mt-3"
+              >
+                <div className="font-display text-2xl sm:text-3xl leading-relaxed font-semibold">
+                  {target.text}
+                </div>
+                {target.translit && (
+                  <div className="text-sm text-primary/90 italic">{target.translit}</div>
+                )}
+                <div className="text-xs text-muted-foreground">{target.meaning}</div>
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
+
 
         {/* Mic */}
         <div className="flex flex-col items-center gap-5 py-2">

@@ -60,7 +60,7 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
         const isBnDialect = !!language && language.startsWith("bn-") && language !== "bn";
         const hasAlt = !!altTranscript && altTranscript.trim() && altTranscript.trim() !== transcript.trim();
 
-        const systemPrompt = `You are Uchcharon AI, a friendly expert pronunciation coach. You support these languages: English, Mandarin Chinese, Hindi, Spanish, Modern Standard Arabic, French, Bengali (Standard Bangla and regional dialects: Sylheti, Chattogramia, Noakhailla, Rangpuri, Barishailla), Portuguese, Russian, and Urdu.
+        const systemPrompt = `You are Uccharon AI, a friendly expert pronunciation coach. You support these languages: English, Mandarin Chinese, Hindi, Spanish, Modern Standard Arabic, French, Bengali (Standard Bangla and regional dialects: Sylheti, Chattogramia, Noakhailla, Rangpuri, Barishailla), Portuguese, Russian, and Urdu.
 
 You will be given the LEARNER LANGUAGE they selected, a TARGET SENTENCE (what they were asked to say), and one or two TRANSCRIPT candidates that different ASR systems produced from their audio.${hasAlt ? " When two candidates are provided, silently reconcile them: prefer the reading that best matches the target sentence and the language's phonology; if they disagree on a word, pick the more plausible one and treat that as the effective transcript." : ""} Compare the effective transcript to the target: which words match, which are missing, mispronounced, or replaced. Because ASR is imperfect, unusual spellings or dropped endings usually reveal real pronunciation issues (unclear consonants, wrong vowels, misplaced stress).
 

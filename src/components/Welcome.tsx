@@ -28,7 +28,7 @@ export function Welcome({ onStart }: { onStart: () => void }) {
         transition={{ delay: 0.3, duration: 0.6 }}
         className="font-display text-4xl sm:text-6xl font-bold tracking-tight"
       >
-        Welcome to <span className="text-gradient">Uchcharon AI</span>
+        Welcome to <span className="text-gradient">Uccharon AI</span>
       </motion.h1>
 
       <motion.p

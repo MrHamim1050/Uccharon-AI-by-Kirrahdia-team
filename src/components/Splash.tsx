@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Mic } from "lucide-react";
 
 export function Splash() {
-  const title = "Uchcharon AI";
+  const title = "Uccharon AI";
   return (
     <motion.div
       initial={{ opacity: 1 }}
