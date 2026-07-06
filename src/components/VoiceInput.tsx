@@ -651,7 +651,7 @@ export function VoiceInput() {
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-xs space-y-1">
-                        <div className="font-semibold">{iss.word}</div>
+                        <div className={cn("font-semibold", primaryLang === "bn" && "font-bangla-main")}>{iss.word}</div>
                         <div>{iss.problem}</div>
                         <div className="italic opacity-80">💡 {iss.tip}</div>
                       </TooltipContent>
