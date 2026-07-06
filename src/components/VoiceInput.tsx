@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Mic, Square, Loader2, Sparkles, Shuffle, BookOpen, RotateCcw, Share2, Download, ArrowRight } from "lucide-react";
+import { Mic, Square, Loader2, Sparkles, Shuffle, BookOpen, RotateCcw, Share2, Download, ArrowRight, Volume2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import {
   firstSentence,
   LANGUAGE_LABELS,
   LANGUAGE_ORDER,
+  LANGUAGE_TTS_LOCALE,
   BN_DIALECT_LABELS,
   BN_DIALECT_ORDER,
   type Level,
@@ -428,6 +429,24 @@ export function VoiceInput() {
     resetPractice();
   }
 
+  const speakSentence = useCallback((text: string) => {
+    if (!text) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = LANGUAGE_TTS_LOCALE[primaryLang] ?? "en-US";
+      utter.rate = 0.9;
+      const voices = window.speechSynthesis.getVoices();
+      const match = voices.find((v) => v.lang?.toLowerCase().startsWith(utter.lang.toLowerCase())) ||
+        voices.find((v) => v.lang?.toLowerCase().startsWith(primaryLang));
+      if (match) utter.voice = match;
+      window.speechSynthesis.speak(utter);
+    } catch {
+      /* ignore */
+    }
+  }, [primaryLang]);
+
 
   const issueMap = useMemo(() => {
     const map = new Map<string, Issue>();
@@ -598,18 +617,31 @@ export function VoiceInput() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.35 }}
-                className="relative space-y-1 mt-3"
+                className="relative mt-3 flex items-start gap-3"
               >
-                <div className={cn(
-                  "text-2xl sm:text-3xl leading-relaxed font-semibold",
-                  primaryLang === "bn" ? "font-bangla-main" : "font-display",
-                )}>
-                  {target.text}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 shrink-0 rounded-full border-primary/30 bg-background/60 text-primary hover:bg-primary/10 hover:text-primary"
+                  onClick={() => speakSentence(target.text)}
+                  aria-label="Listen to sentence"
+                  title="Listen"
+                >
+                  <Volume2 className="h-4 w-4" />
+                </Button>
+                <div className="flex-1 space-y-1 min-w-0">
+                  <div className={cn(
+                    "text-2xl sm:text-3xl leading-relaxed font-semibold break-words",
+                    primaryLang === "bn" ? "font-bangla-main" : "font-display",
+                  )}>
+                    {target.text}
+                  </div>
+                  {target.translit && (
+                    <div className={cn("text-sm text-primary/90 italic", primaryLang === "bn" && "font-bangla-side")}>{target.translit}</div>
+                  )}
+                  <div className={cn("text-xs text-muted-foreground", primaryLang === "bn" && "font-bangla-side")}>{target.meaning}</div>
                 </div>
-                {target.translit && (
-                  <div className={cn("text-sm text-primary/90 italic", primaryLang === "bn" && "font-bangla-side")}>{target.translit}</div>
-                )}
-                <div className={cn("text-xs text-muted-foreground", primaryLang === "bn" && "font-bangla-side")}>{target.meaning}</div>
               </motion.div>
             </AnimatePresence>
           )}
