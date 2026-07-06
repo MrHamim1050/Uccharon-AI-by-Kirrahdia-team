@@ -273,24 +273,22 @@ export function VoiceInput() {
       setAudioUrl(null);
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
+      const enhanced = await startEnhancedCapture({ gain: 1.6 });
+      enhancedRef.current = enhanced;
+      enhanced.audioCtx.createMediaStreamSource(enhanced.recorderStream).connect(enhanced.analyser);
+      analyserRef.current = enhanced.analyser;
 
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      const audioCtx = new AudioCtx();
-      audioCtxRef.current = audioCtx;
-      const source = audioCtx.createMediaStreamSource(stream);
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 2048;
-      source.connect(analyser);
-      analyserRef.current = analyser;
-
-      const mime = MediaRecorder.isTypeSupported("audio/webm")
-        ? "audio/webm"
-        : MediaRecorder.isTypeSupported("audio/mp4")
-          ? "audio/mp4"
-          : "";
-      const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      const recorderStream = enhanced.recorderStream;
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : MediaRecorder.isTypeSupported("audio/mp4")
+            ? "audio/mp4"
+            : "";
+      const recorder = mime
+        ? new MediaRecorder(recorderStream, { mimeType: mime })
+        : new MediaRecorder(recorderStream);
       mediaRecorderRef.current = recorder;
       chunksRef.current = [];
       recorder.ondataavailable = (e) => {
