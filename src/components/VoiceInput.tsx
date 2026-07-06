@@ -418,6 +418,22 @@ export function VoiceInput() {
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
+      <div className="text-center">
+        <motion.h1
+          key={primaryLang}
+          initial={{ y: 8, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="font-display text-3xl sm:text-4xl font-bold tracking-tight"
+        >
+          Practice <span className="text-gradient">Standard {LANGUAGE_LABELS[primaryLang]}</span>
+        </motion.h1>
+        <p className="mt-2 text-muted-foreground text-sm sm:text-base">
+          {primaryLang === "bn"
+            ? "Speak in your local dialect. Get instant AI coaching, word by word."
+            : "Speak naturally. Get instant AI pronunciation coaching, word by word."}
+        </p>
+      </div>
       <div className="glass rounded-3xl p-6 sm:p-8 space-y-6">
         {/* Language selector — two dropdowns in one box */}
         <div className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 space-y-3">
