@@ -42,13 +42,14 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
           });
         }
 
-        const { transcript, altTranscript, language, target, targetMeaning, outputLang } = (await request.json()) as {
+        const { transcript, altTranscript, language, target, targetMeaning, outputLang, history } = (await request.json()) as {
           transcript?: string;
           altTranscript?: string;
           language?: string;
           target?: string;
           targetMeaning?: string;
           outputLang?: "en" | "bn";
+          history?: { pattern: string; count: number; lastTip: string }[];
         };
         if (!transcript || !transcript.trim()) {
           return new Response(JSON.stringify({ error: "transcript required" }), {
@@ -85,13 +86,18 @@ Only return JSON. No markdown, no code fences.`;
         const transcriptBlock = hasAlt
           ? `TRANSCRIPT (candidate A): ${transcript}\nTRANSCRIPT (candidate B): ${altTranscript}`
           : `TRANSCRIPT: ${transcript}`;
+        const historyBlock =
+          history && history.length > 0
+            ? `\n\nLEARNER HISTORY (recurring issues from recent sessions):\n${history.map((h) => `- ${h.pattern} (seen ${h.count} times). Last tip: ${h.lastTip}`).join("\n")}\n\nUse this history to tailor your feedback. If the same issue appears again, acknowledge the pattern gently and give a more targeted exercise.`
+            : "";
+
         const responseLangInstruction =
           outputLang === "en"
             ? `Write "overall", "strengths", "problem", "tip", and "practiceTip" in ENGLISH. However, the "word" field MUST stay in the original script of the transcript (do NOT translate or transliterate it). Keep the JSON keys in English.`
             : outputLang === "bn"
               ? `Write "overall", "strengths", "problem", "tip", and "practiceTip" in BENGALI (বাংলা script). Keep the "word" field verbatim from the transcript. Keep the JSON keys in English.`
               : `Respond in the SAME language as the transcript for "overall", "strengths", "problem", "tip", and "practiceTip". Keep the "word" field verbatim from the transcript. Keep the JSON keys in English.`;
-        const userPrompt = `LEARNER LANGUAGE: ${langLabel}\n${responseLangInstruction}\n\n${targetBlock}${transcriptBlock}`;
+        const userPrompt = `LEARNER LANGUAGE: ${langLabel}\n${responseLangInstruction}\n\n${targetBlock}${transcriptBlock}${historyBlock}`;
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Mic, Square, Loader2, Sparkles, Shuffle, BookOpen, RotateCcw, Share2, Download, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -32,7 +32,14 @@ import {
   type TargetSentence,
 } from "@/lib/sentence-bank";
 import { Globe } from "lucide-react";
-import { startEnhancedCapture, type EnhancedAudio } from "@/lib/audio-enhance";
+import type { EnhancedAudio } from "@/lib/audio-enhance";
+import {
+  saveSession,
+  getRecurringIssues,
+  getAverageScore,
+  getSessionCount,
+} from "@/lib/session-history";
+import { TrendingUp, AlertCircle } from "lucide-react";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
 
@@ -156,6 +163,8 @@ export function VoiceInput() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [outputLang, setOutputLang] = useState<"en" | "bn">("bn");
+  const [recurringIssues, setRecurringIssues] = useState<{ pattern: string; count: number; lastTip: string }[]>([]);
+  const [adaptiveSuggestion, setAdaptiveSuggestion] = useState<string | null>(null);
 
   // Compose the language code sent to the backend (e.g. "bn-sylheti" or "en").
   const language = useMemo(() => {
@@ -273,6 +282,7 @@ export function VoiceInput() {
       setAudioUrl(null);
     }
     try {
+      const { startEnhancedCapture } = await import("@/lib/audio-enhance");
       const enhanced = await startEnhancedCapture({ gain: 1.6 });
       enhancedRef.current = enhanced;
       
@@ -351,10 +361,13 @@ export function VoiceInput() {
     setAnalyzing(true);
     setError(null);
     try {
+      const history = getRecurringIssues(language, 2);
+      setRecurringIssues(history);
+
       const res = await fetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning, outputLang: lang }),
+        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning, outputLang: lang, history: history.length > 0 ? history : undefined }),
       });
       if (!res.ok) {
         const t = await res.text();
@@ -362,6 +375,34 @@ export function VoiceInput() {
       }
       const data = (await res.json()) as Analysis;
       setAnalysis(data);
+
+      // Save session to local history for future learning
+      saveSession({
+        language,
+        dialect: primaryLang === "bn" && dialect !== "standard" ? dialect : null,
+        level,
+        targetSentence: level === "freestyle" ? null : target.text,
+        transcript,
+        score: data.score ?? null,
+        issues: data.issues ?? [],
+        strengths: data.strengths ?? [],
+        practiceTip: data.practiceTip ?? "",
+      });
+
+      // Compute adaptive suggestion after saving
+      const avg = getAverageScore(language, 5);
+      const count = getSessionCount(language);
+      if (avg !== null && count >= 3) {
+        if (avg > 85 && level !== "advanced") {
+          setAdaptiveSuggestion(`Great work! Your average score is ${Math.round(avg)}. Try the next level up.`);
+        } else if (avg < 50 && level !== "beginner") {
+          setAdaptiveSuggestion(`Your average score is ${Math.round(avg)}. Consider practicing at a lower level to build confidence.`);
+        } else {
+          setAdaptiveSuggestion(null);
+        }
+      } else {
+        setAdaptiveSuggestion(null);
+      }
     } catch (e: any) {
       setError(e.message ?? "AI analysis failed");
     } finally {
@@ -374,6 +415,8 @@ export function VoiceInput() {
     altTranscriptRef.current = null;
     setAnalysis(null);
     setError(null);
+    setRecurringIssues([]);
+    setAdaptiveSuggestion(null);
     if (audioUrl) {
       URL.revokeObjectURL(audioUrl);
       setAudioUrl(null);
@@ -761,6 +804,33 @@ export function VoiceInput() {
                 <MetricBar label="Confidence" value={submetrics.Confidence} />
               </div>
             </div>
+
+            {adaptiveSuggestion && (
+              <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
+                <TrendingUp className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                <div>
+                  <div className="font-semibold text-primary">Adaptive tip</div>
+                  {adaptiveSuggestion}
+                </div>
+              </div>
+            )}
+
+            {recurringIssues.length > 0 && (
+              <div className="space-y-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-warning">Recurring issues</div>
+                <div className="flex flex-wrap gap-2">
+                  {recurringIssues.map((ri, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-medium text-warning"
+                    >
+                      <AlertCircle className="h-3 w-3" />
+                      {ri.pattern} · {ri.count}×
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {analysis?.overall && (
               <div className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 text-sm leading-relaxed">

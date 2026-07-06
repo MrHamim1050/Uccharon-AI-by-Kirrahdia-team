@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 import { Route as ApiAnalyzePronunciationRouteImport } from './routes/api/analyze-pronunciation'
+import { Route as ApiPublicAnalyticsRouteImport } from './routes/api/public/analytics'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,57 @@ const ApiAnalyzePronunciationRoute = ApiAnalyzePronunciationRouteImport.update({
   path: '/api/analyze-pronunciation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAnalyticsRoute = ApiPublicAnalyticsRouteImport.update({
+  id: '/api/public/analytics',
+  path: '/api/public/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
   '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/public/analytics': typeof ApiPublicAnalyticsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
   '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/public/analytics': typeof ApiPublicAnalyticsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
   '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/public/analytics': typeof ApiPublicAnalyticsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/analyze-pronunciation' | '/api/transcribe'
+  fullPaths:
+    | '/'
+    | '/api/analyze-pronunciation'
+    | '/api/transcribe'
+    | '/api/public/analytics'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/analyze-pronunciation' | '/api/transcribe'
-  id: '__root__' | '/' | '/api/analyze-pronunciation' | '/api/transcribe'
+  to:
+    | '/'
+    | '/api/analyze-pronunciation'
+    | '/api/transcribe'
+    | '/api/public/analytics'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/analyze-pronunciation'
+    | '/api/transcribe'
+    | '/api/public/analytics'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiAnalyzePronunciationRoute: typeof ApiAnalyzePronunciationRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
+  ApiPublicAnalyticsRoute: typeof ApiPublicAnalyticsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +105,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAnalyzePronunciationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/analytics': {
+      id: '/api/public/analytics'
+      path: '/api/public/analytics'
+      fullPath: '/api/public/analytics'
+      preLoaderRoute: typeof ApiPublicAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +119,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiAnalyzePronunciationRoute: ApiAnalyzePronunciationRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
+  ApiPublicAnalyticsRoute: ApiPublicAnalyticsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
