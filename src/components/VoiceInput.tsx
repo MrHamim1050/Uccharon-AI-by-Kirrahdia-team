@@ -365,6 +365,7 @@ export function VoiceInput() {
 
   function resetPractice() {
     setTranscript("");
+    altTranscriptRef.current = null;
     setAnalysis(null);
     setError(null);
     if (audioUrl) {
