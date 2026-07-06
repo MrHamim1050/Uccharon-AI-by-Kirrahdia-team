@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { isSameOriginRequest } from "@/lib/request-guard";
 
 const SUPPORTED_BASE = new Set([
   "en", "zh", "hi", "es", "ar", "fr", "bn", "pt", "ru", "ur",
@@ -135,9 +136,15 @@ export const Route = createFileRoute("/api/transcribe")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        if (!isSameOriginRequest(request)) {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            status: 403,
+            headers: { "content-type": "application/json" },
+          });
+        }
         const apiKey = process.env.LOVABLE_API_KEY;
         if (!apiKey) {
-          return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY" }), {
+          return new Response(JSON.stringify({ error: "Service unavailable" }), {
             status: 500,
             headers: { "content-type": "application/json" },
           });
@@ -158,8 +165,11 @@ export const Route = createFileRoute("/api/transcribe")({
         // Primary transcription (higher-accuracy OpenAI model)
         const primary = await transcribeWithOpenAI(apiKey, file, language);
         if (!primary.ok) {
-          return new Response(JSON.stringify({ error: primary.text || "Transcription failed" }), {
-            status: primary.status,
+          console.error("transcribe upstream error:", primary.status, primary.text);
+          const status = primary.status === 429 ? 429 : primary.status >= 500 ? 502 : 500;
+          const message = primary.status === 429 ? "Service busy, please try again." : "Transcription service unavailable.";
+          return new Response(JSON.stringify({ error: message }), {
+            status,
             headers: { "content-type": "application/json" },
           });
         }

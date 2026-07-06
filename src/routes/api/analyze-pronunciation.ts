@@ -114,8 +114,8 @@ Only return JSON. No markdown, no code fences.`;
           ? `TRANSCRIPT (candidate A): ${transcript}\nTRANSCRIPT (candidate B): ${altTranscript}`
           : `TRANSCRIPT: ${transcript}`;
         const historyBlock =
-          history && history.length > 0
-            ? `\n\nLEARNER HISTORY (recurring issues from recent sessions):\n${history.map((h) => `- ${h.pattern} (seen ${h.count} times). Last tip: ${h.lastTip}`).join("\n")}\n\nUse this history to tailor your feedback. If the same issue appears again, acknowledge the pattern gently and give a more targeted exercise.`
+          safeHistory.length > 0
+            ? `\n\nLEARNER HISTORY (recurring issues from recent sessions):\n${safeHistory.map((h) => `- ${h.pattern} (seen ${h.count} times). Last tip: ${h.lastTip}`).join("\n")}\n\nUse this history to tailor your feedback. If the same issue appears again, acknowledge the pattern gently and give a more targeted exercise.`
             : "";
 
         const responseLangInstruction =
@@ -144,8 +144,11 @@ Only return JSON. No markdown, no code fences.`;
 
         if (!res.ok) {
           const t = await res.text();
-          return new Response(JSON.stringify({ error: t || "AI analysis failed" }), {
-            status: res.status,
+          console.error("analyze-pronunciation upstream error:", res.status, t);
+          const status = res.status === 429 ? 429 : res.status >= 500 ? 502 : 500;
+          const message = res.status === 429 ? "Service busy, please try again." : "Analysis service unavailable.";
+          return new Response(JSON.stringify({ error: message }), {
+            status,
             headers: { "content-type": "application/json" },
           });
         }
