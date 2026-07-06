@@ -62,6 +62,7 @@ const LEVEL_BADGE: Record<Level, string> = {
   beginner: "bg-success/15 text-success border-success/30",
   intermediate: "bg-warning/15 text-warning border-warning/30",
   advanced: "bg-destructive/15 text-destructive border-destructive/30",
+  freestyle: "bg-primary/15 text-primary border-primary/30",
 };
 
 function AnimatedCounter({ value }: { value: number }) {
