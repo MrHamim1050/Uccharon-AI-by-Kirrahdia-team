@@ -502,6 +502,7 @@ export function VoiceInput() {
                   <SelectItem value="beginner">Beginner</SelectItem>
                   <SelectItem value="intermediate">Intermediate</SelectItem>
                   <SelectItem value="advanced">Advanced</SelectItem>
+                  <SelectItem value="freestyle">Freestyle</SelectItem>
                 </SelectContent>
               </Select>
               <Button
