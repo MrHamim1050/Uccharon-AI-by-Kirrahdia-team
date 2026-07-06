@@ -85,7 +85,13 @@ Only return JSON. No markdown, no code fences.`;
         const transcriptBlock = hasAlt
           ? `TRANSCRIPT (candidate A): ${transcript}\nTRANSCRIPT (candidate B): ${altTranscript}`
           : `TRANSCRIPT: ${transcript}`;
-        const userPrompt = `LEARNER LANGUAGE: ${langLabel}\nRespond in the SAME language as the transcript for "overall", "strengths", "problem", "tip", and "practiceTip". Keep the JSON keys in English.\n\n${targetBlock}${transcriptBlock}`;
+        const responseLangInstruction =
+          outputLang === "en"
+            ? `Write "overall", "strengths", "problem", "tip", and "practiceTip" in ENGLISH. However, the "word" field MUST stay in the original script of the transcript (do NOT translate or transliterate it). Keep the JSON keys in English.`
+            : outputLang === "bn"
+              ? `Write "overall", "strengths", "problem", "tip", and "practiceTip" in BENGALI (বাংলা script). Keep the "word" field verbatim from the transcript. Keep the JSON keys in English.`
+              : `Respond in the SAME language as the transcript for "overall", "strengths", "problem", "tip", and "practiceTip". Keep the "word" field verbatim from the transcript. Keep the JSON keys in English.`;
+        const userPrompt = `LEARNER LANGUAGE: ${langLabel}\n${responseLangInstruction}\n\n${targetBlock}${transcriptBlock}`;
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
