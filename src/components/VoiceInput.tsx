@@ -679,7 +679,7 @@ export function VoiceInput() {
         <motion.button
           whileHover={{ scale: transcript.trim() && !analyzing ? 1.01 : 1 }}
           whileTap={{ scale: 0.99 }}
-          onClick={analyzeWithAI}
+          onClick={() => analyzeWithAI()}
           disabled={!transcript.trim() || analyzing}
           className={cn(
             "relative flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-semibold text-primary-foreground shadow-glow overflow-hidden",
