@@ -343,14 +343,15 @@ export function VoiceInput() {
     }
   }
 
-  async function analyzeWithAI() {
+  async function analyzeWithAI(langOverride?: "en" | "bn") {
+    const lang = langOverride ?? outputLang;
     setAnalyzing(true);
     setError(null);
     try {
       const res = await fetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning }),
+        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning, outputLang: lang }),
       });
       if (!res.ok) {
         const t = await res.text();
