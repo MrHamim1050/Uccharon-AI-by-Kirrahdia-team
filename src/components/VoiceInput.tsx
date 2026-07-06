@@ -142,11 +142,10 @@ function MetricBar({ label, value }: { label: string; value: number }) {
 }
 
 export function VoiceInput() {
-  const [language, setLanguage] = useState<string>("auto");
+  const [primaryLang, setPrimaryLang] = useState<LanguageCode>("bn");
+  const [dialect, setDialect] = useState<BnDialect>("standard");
   const [level, setLevel] = useState<Level>("beginner");
-  const [target, setTarget] = useState<TargetSentence>(
-    () => SENTENCE_BANK.find((s) => s.level === "beginner") ?? SENTENCE_BANK[0],
-  );
+  const [target, setTarget] = useState<TargetSentence>(() => firstSentence("bn", "beginner"));
   const [status, setStatus] = useState<Status>("idle");
   const [transcript, setTranscript] = useState("");
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -154,6 +153,12 @@ export function VoiceInput() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+
+  // Compose the language code sent to the backend (e.g. "bn-sylheti" or "en").
+  const language = useMemo(() => {
+    if (primaryLang === "bn" && dialect !== "standard") return `bn-${dialect}`;
+    return primaryLang;
+  }, [primaryLang, dialect]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -166,10 +171,11 @@ export function VoiceInput() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    setTarget((cur) => randomSentence("beginner", cur.id));
+    setTarget((cur) => randomSentence(primaryLang, level, cur.id));
     return () => stopEverything();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   // Confetti when score > 90
   useEffect(() => {
