@@ -1,4 +1,4 @@
-export type Level = "beginner" | "intermediate" | "advanced";
+export type Level = "beginner" | "intermediate" | "advanced" | "freestyle";
 
 export type LanguageCode =
   | "en"
