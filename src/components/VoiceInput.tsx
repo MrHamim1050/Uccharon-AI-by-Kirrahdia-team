@@ -723,6 +723,35 @@ export function VoiceInput() {
             transition={{ duration: 0.5 }}
             className="glass rounded-3xl p-6 sm:p-8 space-y-6"
           >
+            {/* Output language toggle */}
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/40 backdrop-blur px-4 py-2">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Feedback language
+              </div>
+              <div className="inline-flex rounded-full border border-border/60 bg-muted/40 p-0.5 text-xs font-medium">
+                {(["bn", "en"] as const).map((lc) => (
+                  <button
+                    key={lc}
+                    type="button"
+                    onClick={() => {
+                      if (lc === outputLang || analyzing) return;
+                      setOutputLang(lc);
+                      analyzeWithAI(lc);
+                    }}
+                    className={cn(
+                      "rounded-full px-3 py-1 transition-colors",
+                      outputLang === lc
+                        ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                    disabled={analyzing}
+                  >
+                    {lc === "bn" ? "বাংলা" : "English"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid gap-6 sm:grid-cols-[auto_minmax(0,1fr)] items-center">
               <div className="justify-self-center">
                 <ScoreRing score={score} />
