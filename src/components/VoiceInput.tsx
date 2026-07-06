@@ -21,9 +21,17 @@ import { cn } from "@/lib/utils";
 import {
   SENTENCE_BANK,
   randomSentence,
+  firstSentence,
+  LANGUAGE_LABELS,
+  LANGUAGE_ORDER,
+  BN_DIALECT_LABELS,
+  BN_DIALECT_ORDER,
   type Level,
+  type LanguageCode,
+  type BnDialect,
   type TargetSentence,
 } from "@/lib/sentence-bank";
+import { Globe } from "lucide-react";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
 
@@ -49,16 +57,6 @@ function pickExt(mime: string) {
   return "webm";
 }
 
-const LANGUAGES: { code: string; label: string }[] = [
-  { code: "auto", label: "Auto-detect" },
-  { code: "bn", label: "Standard Bangla (বাংলা)" },
-  { code: "bn-sylheti", label: "Sylheti (সিলেটি)" },
-  { code: "bn-chattogramia", label: "Chattogramia (চাটগাঁইয়া)" },
-  { code: "bn-noakhailla", label: "Noakhailla (নোয়াখাইল্লা)" },
-  { code: "bn-rangpuri", label: "Rangpuri (রংপুরী)" },
-  { code: "bn-barishailla", label: "Barishailla (বরিশাইল্লা)" },
-  { code: "en", label: "English" },
-];
 
 const LEVEL_BADGE: Record<Level, string> = {
   beginner: "bg-success/15 text-success border-success/30",
