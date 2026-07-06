@@ -415,6 +415,8 @@ export function VoiceInput() {
     altTranscriptRef.current = null;
     setAnalysis(null);
     setError(null);
+    setRecurringIssues([]);
+    setAdaptiveSuggestion(null);
     if (audioUrl) {
       URL.revokeObjectURL(audioUrl);
       setAudioUrl(null);
