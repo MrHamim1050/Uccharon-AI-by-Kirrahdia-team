@@ -429,6 +429,24 @@ export function VoiceInput() {
     resetPractice();
   }
 
+  const speakSentence = useCallback((text: string) => {
+    if (!text) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = LANGUAGE_TTS_LOCALE[primaryLang] ?? "en-US";
+      utter.rate = 0.9;
+      const voices = window.speechSynthesis.getVoices();
+      const match = voices.find((v) => v.lang?.toLowerCase().startsWith(utter.lang.toLowerCase())) ||
+        voices.find((v) => v.lang?.toLowerCase().startsWith(primaryLang));
+      if (match) utter.voice = match;
+      window.speechSynthesis.speak(utter);
+    } catch {
+      /* ignore */
+    }
+  }, [primaryLang]);
+
 
   const issueMap = useMemo(() => {
     const map = new Map<string, Issue>();
