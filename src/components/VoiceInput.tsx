@@ -179,6 +179,11 @@ export function VoiceInput() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // When switching UI language, default the analysis-output language to match.
+  useEffect(() => {
+    setOutputLang(primaryLang === "bn" ? "bn" : "en");
+  }, [primaryLang]);
+
 
   // Confetti when score > 90
   useEffect(() => {
