@@ -13,13 +13,13 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Uchcharon AI — AI Bengali Pronunciation Coach" },
+      { title: "Uccharon AI — AI Bengali Pronunciation Coach" },
       {
         name: "description",
         content:
-          "Uchcharon AI helps speakers of local Bangla dialects (Sylheti, Chattogramia, and more) master Standard Bengali pronunciation with instant AI feedback.",
+          "Uccharon AI helps speakers of local Bangla dialects (Sylheti, Chattogramia, and more) master Standard Bengali pronunciation with instant AI feedback.",
       },
-      { property: "og:title", content: "Uchcharon AI — AI Bengali Pronunciation Coach" },
+      { property: "og:title", content: "Uccharon AI — AI Bengali Pronunciation Coach" },
       {
         property: "og:description",
         content: "Speak Naturally. Learn Perfect Bengali. Powered by AI.",

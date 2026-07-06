@@ -28,7 +28,7 @@ export function AppHeader() {
             </div>
             <div className="min-w-0">
               <div className="font-display text-base sm:text-lg font-bold leading-tight truncate">
-                Uchcharon <span className="text-gradient">AI</span>
+                Uccharon <span className="text-gradient">AI</span>
               </div>
               <div className="hidden sm:block text-[11px] text-muted-foreground leading-tight">
                 AI Bengali Pronunciation Coach
