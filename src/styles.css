@@ -153,6 +153,14 @@
   font-feature-settings: "tnum";
 }
 
+@utility font-bangla-main {
+  font-family: "Hind Siliguri", "Kalpurush", "SolaimanLipi", sans-serif;
+}
+
+@utility font-bangla-side {
+  font-family: "Kalpurush", "Hind Siliguri", "SolaimanLipi", sans-serif;
+}
+
 @keyframes breathe {
   0%, 100% { transform: scale(1); box-shadow: 0 0 30px -6px color-mix(in oklab, var(--primary) 55%, transparent); }
   50% { transform: scale(1.04); box-shadow: 0 0 60px -4px color-mix(in oklab, var(--primary) 75%, transparent); }
