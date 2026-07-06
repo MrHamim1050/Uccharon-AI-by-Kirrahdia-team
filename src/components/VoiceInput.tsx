@@ -32,7 +32,7 @@ import {
   type TargetSentence,
 } from "@/lib/sentence-bank";
 import { Globe } from "lucide-react";
-import { startEnhancedCapture, type EnhancedAudio } from "@/lib/audio-enhance";
+import type { EnhancedAudio } from "@/lib/audio-enhance";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
 

@@ -1,45 +1,35 @@
-## Goal
-Improve transcription accuracy in Uchcharon AI, especially for multilingual input (English, Bangla + dialects, and the other 8 supported languages).
+Current state: The AI is fully stateless. Each analysis is a fresh API call. No data is stored.
 
-## Reality check on the hybrid models you mentioned
-Canary-Qwen, IBM Granite Speech 3.3, and Phi-4-Multimodal are excellent, but they are **not available through Lovable AI Gateway**. Our server route can only call models the gateway exposes. The gateway's speech-to-text allowlist is:
+Phase 0 — Fix SSR crash (prerequisite)
+- Move the `@sapphi-red/web-noise-suppressor` import inside a browser-only guard so server render never touches `AudioWorkletNode`.
+- Make `startEnhancedCapture` dynamically imported only when `typeof window !== 'undefined'`.
 
-- `openai/gpt-4o-mini-transcribe` (current)
-- `openai/gpt-4o-transcribe` (higher accuracy, same API)
+Phase 1 — Enable persistence (Lovable Cloud)
+- Enable Lovable Cloud to get Supabase PostgreSQL.
+- Create a `pronunciation_sessions` table:
+  - id, user_id (anon/guest UUID or auth.uid()), language, dialect, level, target_sentence, transcript, score, issues JSONB, created_at.
+- Create a `user_profiles` table to store per-user preferences (preferred language, output language, auto-difficulty flag).
 
-Additionally, Gemini chat models (`google/gemini-3-flash-preview`, `google/gemini-3-pro-preview`) accept audio input via `/v1/chat/completions` and can transcribe — useful as a second opinion or for language-aware coaching.
+Phase 2 — Per-user memory (personal learning)
+- Server function `saveSession({ transcript, score, issues, language, target })` inserts into `pronunciation_sessions`.
+- Server function `getRecentMistakes({ userId, language, limit })` fetches the last 5–10 sessions, extracts recurring issue patterns (e.g., "শ vs ষ", Sylheti vowel shift).
+- Modify the analysis prompt in `analyze-pronunciation.ts`:
+  - When a user has history, inject a "Learner history" block: "This learner often struggles with X, Y, Z. Tailor tips accordingly."
+  - If the same word was flagged in the last 2 sessions, make the tip more targeted.
+- UI: After analysis, show a "Your recurring issues" chip list (e.g., "শ/ষ confusion — 4 times").
 
-Wiring a self-hosted Conformer+LLM (Canary-Qwen etc.) would require standing up an external inference endpoint (Replicate / HF Inference / your own GPU) and storing an API key — out of scope unless you want that path.
+Phase 3 — Adaptive difficulty (per-user intelligence)
+- Track average score over last N sessions per level.
+- If average > 85 for 3 sessions, auto-suggest level up.
+- If average < 50, suggest dropping down or generating custom drill sentences targeting the weakest phonemes.
+- Add a "Personalized Practice" button that generates a sentence using only the sounds the user misses most.
 
-## Proposed plan (works within the gateway)
+Phase 4 — Global improvement (collective learning)
+- Anonymous aggregation query: most common issues per language/dialect pair.
+- Use aggregated data to improve the default system prompt (e.g., if 60% of Sylheti learners confuse "ই" and "ঈ", add that as a known pattern in the base prompt).
+- Admin/owner view (simple table) showing top 10 dialect→standard error patterns across all users.
+- Use aggregated patterns to generate better stock sentences for the sentence bank.
 
-### 1. Upgrade the primary STT model
-`src/routes/api/transcribe.ts`: switch `openai/gpt-4o-mini-transcribe` → `openai/gpt-4o-transcribe`. Same request shape, meaningfully better accuracy on accented and code-switched speech.
-
-### 2. Add a "hybrid" verification pass for Bengali dialects
-When the selected language is Bengali (any dialect), run a second transcription through `google/gemini-3-pro-preview` with the audio attached and a prompt like "Transcribe this audio in Bengali script. The speaker may use Sylheti/Chittagonian/Standard Bangla." Then:
-
-- If both transcripts agree (normalized), use it with high confidence.
-- If they disagree, pass **both** candidates + the target sentence into the existing `analyze-pronunciation` route so Gemini picks the most plausible one before scoring.
-
-This mimics the accuracy gains of hybrid encoder+LLM systems using models we actually have.
-
-### 3. Tighten the language bias prompt
-Current `prompt` field lists all 10 languages, which can confuse Whisper-style models. Change to send only the currently selected language + (for Bengali) the dialect hint. Removes cross-language hallucination.
-
-### 4. Optional: model picker
-Add a small "Accuracy: Standard / High" toggle in the UI that switches between `gpt-4o-mini-transcribe` (fast, cheap) and the hybrid `gpt-4o-transcribe + Gemini verify` path (slower, best). Default = High.
-
-## Files touched
-- `src/routes/api/transcribe.ts` — model swap, per-language prompt, optional Gemini verification pass, dual-candidate return.
-- `src/routes/api/analyze-pronunciation.ts` — accept optional second candidate transcript and reconcile.
-- `src/components/VoiceInput.tsx` — (only if you want the accuracy toggle) add the switch and pass the mode to the API.
-
-## Not in this plan
-Self-hosting Canary-Qwen / Granite Speech / Phi-4-Multimodal. Say the word if you want me to add that via Replicate or a custom endpoint — I'll write a separate plan for it since it needs an API key and a new integration.
-
-## Question before I build
-Do you want:
-- **A)** Just the model upgrade + smarter prompt (fast, one-file change), or
-- **B)** The full hybrid pipeline (gpt-4o-transcribe + Gemini verification for Bengali) with the accuracy toggle, or
-- **C)** I draft a separate plan for actually integrating Canary-Qwen / Phi-4-Multimodal via Replicate?
+Out of scope for this plan:
+- Model fine-tuning (requires thousands of labeled audio samples; not cost-effective at this stage).
+- Paid server-side voice isolation (ElevenLabs Voice Isolator).
