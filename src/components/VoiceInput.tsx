@@ -33,6 +33,13 @@ import {
 } from "@/lib/sentence-bank";
 import { Globe } from "lucide-react";
 import type { EnhancedAudio } from "@/lib/audio-enhance";
+import {
+  saveSession,
+  getRecurringIssues,
+  getAverageScore,
+  getSessionCount,
+} from "@/lib/session-history";
+import { TrendingUp, AlertCircle } from "lucide-react";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
 
