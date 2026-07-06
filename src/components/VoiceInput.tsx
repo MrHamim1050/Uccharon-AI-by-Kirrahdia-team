@@ -196,14 +196,14 @@ export function VoiceInput() {
       burst();
     }
   }, [analysis]);
-
   function stopEverything() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    audioCtxRef.current?.close().catch(() => {});
-    streamRef.current = null;
-    audioCtxRef.current = null;
+    const enh = enhancedRef.current;
+    if (enh) {
+      enh.dispose().catch(() => {});
+    }
+    enhancedRef.current = null;
     analyserRef.current = null;
     rafRef.current = null;
     timerRef.current = null;
