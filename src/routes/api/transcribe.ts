@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+// Base ISO-639-1 codes we accept from the client (dialects like `bn-sylheti`
+// collapse to their base, e.g. `bn`).
+const SUPPORTED_BASE = new Set([
+  "en", "zh", "hi", "es", "ar", "fr", "bn", "pt", "ru", "ur",
+]);
+
 export const Route = createFileRoute("/api/transcribe")({
   server: {
     handlers: {
@@ -25,17 +31,14 @@ export const Route = createFileRoute("/api/transcribe")({
         const upstream = new FormData();
         upstream.append("file", file, file.name || "recording.webm");
         upstream.append("model", "openai/gpt-4o-mini-transcribe");
-        // Bias detection to English / Standard Bangla / regional Bangla dialects only.
         upstream.append(
           "prompt",
-          "This audio is in English, Standard Bangla (বাংলা), or a regional Bangla dialect such as Sylheti, Chattogramia, Noakhailla, Rangpuri, or Barishailla. Transcribe only as English or Bangla script.",
+          "The audio is in one of: English, Mandarin Chinese, Hindi, Spanish, Modern Standard Arabic, French, Standard Bangla (or a regional Bangla dialect such as Sylheti, Chattogramia, Noakhailla, Rangpuri, Barishailla), Portuguese, Russian, or Urdu. Transcribe faithfully in the native script of the spoken language.",
         );
         if (typeof language === "string" && language && language !== "auto") {
-          // Map dialect codes (e.g. bn-sylheti) to base ISO-639-1 for the ASR
           const base = language.split("-")[0];
-          if (base === "bn" || base === "en") upstream.append("language", base);
+          if (SUPPORTED_BASE.has(base)) upstream.append("language", base);
         }
-
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
           method: "POST",
