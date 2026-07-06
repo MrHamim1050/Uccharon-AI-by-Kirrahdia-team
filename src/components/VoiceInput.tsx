@@ -526,7 +526,9 @@ export function VoiceInput() {
               <div className="font-display text-2xl sm:text-3xl leading-relaxed font-semibold">
                 {target.text}
               </div>
-              <div className="text-sm text-primary/90 italic">{target.translit}</div>
+              {target.translit && (
+                <div className="text-sm text-primary/90 italic">{target.translit}</div>
+              )}
               <div className="text-xs text-muted-foreground">{target.meaning}</div>
             </motion.div>
           </AnimatePresence>
