@@ -42,8 +42,9 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
           });
         }
 
-        const { transcript, language, target, targetMeaning } = (await request.json()) as {
+        const { transcript, altTranscript, language, target, targetMeaning } = (await request.json()) as {
           transcript?: string;
+          altTranscript?: string;
           language?: string;
           target?: string;
           targetMeaning?: string;
@@ -57,10 +58,11 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
 
         const langLabel = describeLanguage(language);
         const isBnDialect = !!language && language.startsWith("bn-") && language !== "bn";
+        const hasAlt = !!altTranscript && altTranscript.trim() && altTranscript.trim() !== transcript.trim();
 
         const systemPrompt = `You are Uchcharon AI, a friendly expert pronunciation coach. You support these languages: English, Mandarin Chinese, Hindi, Spanish, Modern Standard Arabic, French, Bengali (Standard Bangla and regional dialects: Sylheti, Chattogramia, Noakhailla, Rangpuri, Barishailla), Portuguese, Russian, and Urdu.
 
-You will be given the LEARNER LANGUAGE they selected, a TARGET SENTENCE (what they were asked to say), and the TRANSCRIPT that an ASR produced from their audio. Compare the transcript to the target: which words match, which are missing, mispronounced, or replaced. Because ASR is imperfect, unusual spellings or dropped endings usually reveal real pronunciation issues (unclear consonants, wrong vowels, misplaced stress).
+You will be given the LEARNER LANGUAGE they selected, a TARGET SENTENCE (what they were asked to say), and one or two TRANSCRIPT candidates that different ASR systems produced from their audio.${hasAlt ? " When two candidates are provided, silently reconcile them: prefer the reading that best matches the target sentence and the language's phonology; if they disagree on a word, pick the more plausible one and treat that as the effective transcript." : ""} Compare the effective transcript to the target: which words match, which are missing, mispronounced, or replaced. Because ASR is imperfect, unusual spellings or dropped endings usually reveal real pronunciation issues (unclear consonants, wrong vowels, misplaced stress).
 
 ${isBnDialect ? "The learner speaks a regional Bangla dialect. Coach them toward STANDARD BANGLA (প্রমিত বাংলা) pronunciation.\n\n" : ""}If the transcript is clearly in a language outside the supported list, politely say so in the "overall" field, set score to null, and return empty arrays.
 
@@ -71,7 +73,7 @@ Return a concise JSON object with this exact shape:
   "strengths": string[] (0-3 short bullets),
   "issues": [
     { "word": string, "problem": string, "tip": string }
-  ] (0-6 items; "word" MUST appear verbatim in the TRANSCRIPT so it can be highlighted),
+  ] (0-6 items; "word" MUST appear verbatim in one of the TRANSCRIPT candidates so it can be highlighted),
   "practiceTip": string (one actionable next step)
 }
 Only return JSON. No markdown, no code fences.`;
@@ -79,7 +81,10 @@ Only return JSON. No markdown, no code fences.`;
         const targetBlock = target
           ? `TARGET SENTENCE: ${target}${targetMeaning ? `\nMEANING (English): ${targetMeaning}` : ""}\n\n`
           : "";
-        const userPrompt = `LEARNER LANGUAGE: ${langLabel}\nRespond in the SAME language as the transcript for "overall", "strengths", "problem", "tip", and "practiceTip". Keep the JSON keys in English.\n\n${targetBlock}TRANSCRIPT: ${transcript}`;
+        const transcriptBlock = hasAlt
+          ? `TRANSCRIPT (candidate A): ${transcript}\nTRANSCRIPT (candidate B): ${altTranscript}`
+          : `TRANSCRIPT: ${transcript}`;
+        const userPrompt = `LEARNER LANGUAGE: ${langLabel}\nRespond in the SAME language as the transcript for "overall", "strengths", "problem", "tip", and "practiceTip". Keep the JSON keys in English.\n\n${targetBlock}${transcriptBlock}`;
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
