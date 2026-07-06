@@ -167,6 +167,7 @@ export function VoiceInput() {
   const rafRef = useRef<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const altTranscriptRef = useRef<string | null>(null);
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -332,6 +333,7 @@ export function VoiceInput() {
       }
       const data = await res.json();
       setTranscript((data.text ?? "").trim());
+      altTranscriptRef.current = typeof data.alt === "string" ? data.alt : null;
       setStatus("idle");
     } catch (e: any) {
       setError(e.message ?? "Transcription failed");
@@ -346,7 +348,7 @@ export function VoiceInput() {
       const res = await fetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript, language, target: target.text, targetMeaning: target.meaning }),
+        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: target.text, targetMeaning: target.meaning }),
       });
       if (!res.ok) {
         const t = await res.text();
