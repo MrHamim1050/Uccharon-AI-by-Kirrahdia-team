@@ -275,7 +275,7 @@ export function VoiceInput() {
     try {
       const enhanced = await startEnhancedCapture({ gain: 1.6 });
       enhancedRef.current = enhanced;
-      enhanced.audioCtx.createMediaStreamSource(enhanced.recorderStream).connect(enhanced.analyser);
+      
       analyserRef.current = enhanced.analyser;
 
       const recorderStream = enhanced.recorderStream;
