@@ -154,6 +154,7 @@ export function VoiceInput() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [outputLang, setOutputLang] = useState<"en" | "bn">("bn");
 
   // Compose the language code sent to the backend (e.g. "bn-sylheti" or "en").
   const language = useMemo(() => {
