@@ -361,10 +361,13 @@ export function VoiceInput() {
     setAnalyzing(true);
     setError(null);
     try {
+      const history = getRecurringIssues(language, 2);
+      setRecurringIssues(history);
+
       const res = await fetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning, outputLang: lang }),
+        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning, outputLang: lang, history: history.length > 0 ? history : undefined }),
       });
       if (!res.ok) {
         const t = await res.text();
@@ -372,6 +375,34 @@ export function VoiceInput() {
       }
       const data = (await res.json()) as Analysis;
       setAnalysis(data);
+
+      // Save session to local history for future learning
+      saveSession({
+        language,
+        dialect: primaryLang === "bn" && dialect !== "standard" ? dialect : null,
+        level,
+        targetSentence: level === "freestyle" ? null : target.text,
+        transcript,
+        score: data.score ?? null,
+        issues: data.issues ?? [],
+        strengths: data.strengths ?? [],
+        practiceTip: data.practiceTip ?? "",
+      });
+
+      // Compute adaptive suggestion after saving
+      const avg = getAverageScore(language, 5);
+      const count = getSessionCount(language);
+      if (avg !== null && count >= 3) {
+        if (avg > 85 && level !== "advanced") {
+          setAdaptiveSuggestion(`Great work! Your average score is ${Math.round(avg)}. Try the next level up.`);
+        } else if (avg < 50 && level !== "beginner") {
+          setAdaptiveSuggestion(`Your average score is ${Math.round(avg)}. Consider practicing at a lower level to build confidence.`);
+        } else {
+          setAdaptiveSuggestion(null);
+        }
+      } else {
+        setAdaptiveSuggestion(null);
+      }
     } catch (e: any) {
       setError(e.message ?? "AI analysis failed");
     } finally {
