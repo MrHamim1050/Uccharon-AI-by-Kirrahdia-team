@@ -273,6 +273,7 @@ export function VoiceInput() {
       setAudioUrl(null);
     }
     try {
+      const { startEnhancedCapture } = await import("@/lib/audio-enhance");
       const enhanced = await startEnhancedCapture({ gain: 1.6 });
       enhancedRef.current = enhanced;
       
