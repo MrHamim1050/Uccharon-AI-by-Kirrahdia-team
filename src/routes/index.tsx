@@ -54,24 +54,6 @@ function Index() {
           >
             <AppHeader />
             <main className="px-4 pb-16 pt-8 sm:pt-12">
-              <div className="mx-auto max-w-3xl text-center mb-8">
-                <motion.h1
-                  initial={{ y: 12, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.15 }}
-                  className="font-display text-3xl sm:text-4xl font-bold tracking-tight"
-                >
-                  Practice <span className="text-gradient">Standard Bengali</span>
-                </motion.h1>
-                <motion.p
-                  initial={{ y: 12, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.25 }}
-                  className="mt-3 text-muted-foreground"
-                >
-                  Speak in your local dialect. Get instant AI coaching, word by word.
-                </motion.p>
-              </div>
               <VoiceInput />
             </main>
           </motion.div>
