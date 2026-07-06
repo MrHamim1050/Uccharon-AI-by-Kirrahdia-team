@@ -415,19 +415,59 @@ export function VoiceInput() {
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
       <div className="glass rounded-3xl p-6 sm:p-8 space-y-6">
-        {/* Language */}
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <label className="text-sm font-medium text-muted-foreground min-w-0">Detection language</label>
-          <Select value={language} onValueChange={setLanguage} disabled={isRecording || isBusy}>
-            <SelectTrigger className="w-52 rounded-xl border-border/60 bg-background/50 backdrop-blur">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              {LANGUAGES.map((l) => (
-                <SelectItem key={l.code} value={l.code}>{l.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Language selector — two dropdowns in one box */}
+        <div className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <Globe className="h-3.5 w-3.5" />
+            Detection language
+          </div>
+          <div
+            className={cn(
+              "grid gap-2",
+              primaryLang === "bn" ? "sm:grid-cols-2" : "sm:grid-cols-1",
+            )}
+          >
+            <Select
+              value={primaryLang}
+              onValueChange={(v) => {
+                const lc = v as LanguageCode;
+                setPrimaryLang(lc);
+                if (lc !== "bn") setDialect("standard");
+                setTarget(randomSentence(lc, level));
+                resetPractice();
+              }}
+              disabled={isRecording || isBusy}
+            >
+              <SelectTrigger className="rounded-xl border-border/60 bg-background/60">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                {LANGUAGE_ORDER.map((code) => (
+                  <SelectItem key={code} value={code}>
+                    {LANGUAGE_LABELS[code]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {primaryLang === "bn" && (
+              <Select
+                value={dialect}
+                onValueChange={(v) => setDialect(v as BnDialect)}
+                disabled={isRecording || isBusy}
+              >
+                <SelectTrigger className="rounded-xl border-border/60 bg-background/60">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {BN_DIALECT_ORDER.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {BN_DIALECT_LABELS[code]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
         </div>
 
         {/* Target sentence card */}
@@ -436,7 +476,7 @@ export function VoiceInput() {
           <div className="relative flex items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <BookOpen className="h-3.5 w-3.5" />
-              Today's Sentence
+              {LANGUAGE_LABELS[primaryLang]} · Practice
               <span className={cn("ml-1 rounded-full border px-2 py-0.5 text-[10px] font-medium", LEVEL_BADGE[target.level])}>
                 {target.level}
               </span>
@@ -447,7 +487,7 @@ export function VoiceInput() {
                 onValueChange={(v) => {
                   const lv = v as Level;
                   setLevel(lv);
-                  setTarget(randomSentence(lv));
+                  setTarget(randomSentence(primaryLang, lv));
                 }}
                 disabled={isRecording || isBusy}
               >
@@ -465,7 +505,7 @@ export function VoiceInput() {
                 variant="outline"
                 size="sm"
                 className="h-8 rounded-lg"
-                onClick={() => setTarget(randomSentence(level, target.id))}
+                onClick={() => setTarget(randomSentence(primaryLang, level, target.id))}
                 disabled={isRecording || isBusy}
                 aria-label="Shuffle sentence"
               >
@@ -473,6 +513,7 @@ export function VoiceInput() {
               </Button>
             </div>
           </div>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={target.id}
