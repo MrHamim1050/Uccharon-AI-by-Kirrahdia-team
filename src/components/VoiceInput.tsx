@@ -24,6 +24,7 @@ import {
   firstSentence,
   LANGUAGE_LABELS,
   LANGUAGE_ORDER,
+  LANGUAGE_TTS_LOCALE,
   BN_DIALECT_LABELS,
   BN_DIALECT_ORDER,
   type Level,
