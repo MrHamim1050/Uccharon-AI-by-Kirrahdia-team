@@ -32,6 +32,7 @@ import {
   type TargetSentence,
 } from "@/lib/sentence-bank";
 import { Globe } from "lucide-react";
+import { startEnhancedCapture, type EnhancedAudio } from "@/lib/audio-enhance";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
 
@@ -163,8 +164,7 @@ export function VoiceInput() {
   }, [primaryLang, dialect]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
+  const enhancedRef = useRef<EnhancedAudio | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const rafRef = useRef<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -196,14 +196,14 @@ export function VoiceInput() {
       burst();
     }
   }, [analysis]);
-
   function stopEverything() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    audioCtxRef.current?.close().catch(() => {});
-    streamRef.current = null;
-    audioCtxRef.current = null;
+    const enh = enhancedRef.current;
+    if (enh) {
+      enh.dispose().catch(() => {});
+    }
+    enhancedRef.current = null;
     analyserRef.current = null;
     rafRef.current = null;
     timerRef.current = null;
@@ -273,24 +273,22 @@ export function VoiceInput() {
       setAudioUrl(null);
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
+      const enhanced = await startEnhancedCapture({ gain: 1.6 });
+      enhancedRef.current = enhanced;
+      
+      analyserRef.current = enhanced.analyser;
 
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      const audioCtx = new AudioCtx();
-      audioCtxRef.current = audioCtx;
-      const source = audioCtx.createMediaStreamSource(stream);
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 2048;
-      source.connect(analyser);
-      analyserRef.current = analyser;
-
-      const mime = MediaRecorder.isTypeSupported("audio/webm")
-        ? "audio/webm"
-        : MediaRecorder.isTypeSupported("audio/mp4")
-          ? "audio/mp4"
-          : "";
-      const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      const recorderStream = enhanced.recorderStream;
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : MediaRecorder.isTypeSupported("audio/mp4")
+            ? "audio/mp4"
+            : "";
+      const recorder = mime
+        ? new MediaRecorder(recorderStream, { mimeType: mime })
+        : new MediaRecorder(recorderStream);
       mediaRecorderRef.current = recorder;
       chunksRef.current = [];
       recorder.ondataavailable = (e) => {
