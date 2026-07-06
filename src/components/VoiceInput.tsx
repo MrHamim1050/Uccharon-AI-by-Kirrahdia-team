@@ -559,13 +559,16 @@ export function VoiceInput() {
                 transition={{ duration: 0.35 }}
                 className="relative space-y-1 mt-3"
               >
-                <div className="font-display text-2xl sm:text-3xl leading-relaxed font-semibold">
+                <div className={cn(
+                  "text-2xl sm:text-3xl leading-relaxed font-semibold",
+                  primaryLang === "bn" ? "font-bangla-main" : "font-display",
+                )}>
                   {target.text}
                 </div>
                 {target.translit && (
-                  <div className="text-sm text-primary/90 italic">{target.translit}</div>
+                  <div className={cn("text-sm text-primary/90 italic", primaryLang === "bn" && "font-bangla-side")}>{target.translit}</div>
                 )}
-                <div className="text-xs text-muted-foreground">{target.meaning}</div>
+                <div className={cn("text-xs text-muted-foreground", primaryLang === "bn" && "font-bangla-side")}>{target.meaning}</div>
               </motion.div>
             </AnimatePresence>
           )}
