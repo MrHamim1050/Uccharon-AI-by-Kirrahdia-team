@@ -1,4 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { isSameOriginRequest } from "@/lib/request-guard";
+
+function sanitizeHistory(
+  raw: unknown,
+): { pattern: string; count: number; lastTip: string }[] {
+  if (!Array.isArray(raw)) return [];
+  const strip = (s: string) => s.replace(/[\r\n\t\u0000-\u001F\u007F]/g, " ").trim();
+  return raw
+    .slice(0, 5)
+    .map((h) => {
+      if (!h || typeof h !== "object") return null;
+      const pattern = typeof (h as any).pattern === "string" ? strip((h as any).pattern).slice(0, 80) : "";
+      const lastTip = typeof (h as any).lastTip === "string" ? strip((h as any).lastTip).slice(0, 160) : "";
+      const rawCount = Number((h as any).count);
+      const count = Number.isFinite(rawCount) && rawCount > 0 ? Math.min(Math.floor(rawCount), 9999) : 0;
+      if (!pattern) return null;
+      return { pattern, count, lastTip };
+    })
+    .filter((x): x is { pattern: string; count: number; lastTip: string } => x !== null);
+}
 
 const LANG_NAMES: Record<string, string> = {
   en: "English",
@@ -34,9 +54,15 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        if (!isSameOriginRequest(request)) {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            status: 403,
+            headers: { "content-type": "application/json" },
+          });
+        }
         const apiKey = process.env.LOVABLE_API_KEY;
         if (!apiKey) {
-          return new Response(JSON.stringify({ error: "Missing LOVABLE_API_KEY" }), {
+          return new Response(JSON.stringify({ error: "Service unavailable" }), {
             status: 500,
             headers: { "content-type": "application/json" },
           });
@@ -49,7 +75,7 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
           target?: string;
           targetMeaning?: string;
           outputLang?: "en" | "bn";
-          history?: { pattern: string; count: number; lastTip: string }[];
+          history?: unknown;
         };
         if (!transcript || !transcript.trim()) {
           return new Response(JSON.stringify({ error: "transcript required" }), {
@@ -57,6 +83,7 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
             headers: { "content-type": "application/json" },
           });
         }
+        const safeHistory = sanitizeHistory(history);
 
         const langLabel = describeLanguage(language);
         const isBnDialect = !!language && language.startsWith("bn-") && language !== "bn";
