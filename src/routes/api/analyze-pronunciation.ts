@@ -1,5 +1,35 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+const LANG_NAMES: Record<string, string> = {
+  en: "English",
+  zh: "Mandarin Chinese",
+  hi: "Hindi",
+  es: "Spanish",
+  ar: "Modern Standard Arabic",
+  fr: "French",
+  bn: "Standard Bangla",
+  pt: "Portuguese",
+  ru: "Russian",
+  ur: "Urdu",
+};
+
+const BN_DIALECT_NAMES: Record<string, string> = {
+  sylheti: "Sylheti",
+  chattogramia: "Chattogramia",
+  noakhailla: "Noakhailla",
+  rangpuri: "Rangpuri",
+  barishailla: "Barishailla",
+};
+
+function describeLanguage(code?: string) {
+  if (!code || code === "auto") return "the language the learner spoke";
+  const [base, variant] = code.split("-");
+  if (base === "bn" && variant && BN_DIALECT_NAMES[variant]) {
+    return `${BN_DIALECT_NAMES[variant]} (a regional Bangla dialect); the learning target is Standard Bangla (প্রমিত বাংলা)`;
+  }
+  return LANG_NAMES[base] ?? code;
+}
+
 export const Route = createFileRoute("/api/analyze-pronunciation")({
   server: {
     handlers: {
@@ -24,19 +54,19 @@ export const Route = createFileRoute("/api/analyze-pronunciation")({
             headers: { "content-type": "application/json" },
           });
         }
-        const langLabel = language && language !== "auto" ? language : "the language/dialect the learner spoke (auto-detect between English, Standard Bangla, or a regional Bangla dialect like Sylheti, Chattogramia, Noakhailla, Rangpuri, or Barishailla)";
 
+        const langLabel = describeLanguage(language);
+        const isBnDialect = !!language && language.startsWith("bn-") && language !== "bn";
 
-        const systemPrompt = `You are Uchcharon AI, a friendly expert coach that helps speakers of REGIONAL BANGLA DIALECTS (Sylheti, Chattogramia, Noakhailla, Rangpuri, Barishailla, etc.) learn STANDARD BANGLA (প্রমিত বাংলা) pronunciation. You also support English learners. You do NOT coach any other language — if the transcript is clearly in another language (Spanish, French, Hindi, Urdu, etc.), politely say in the "overall" field that Uchcharon AI only supports English and Bangla (including regional dialects), set score to null, and return empty arrays.
+        const systemPrompt = `You are Uchcharon AI, a friendly expert pronunciation coach. You support these languages: English, Mandarin Chinese, Hindi, Spanish, Modern Standard Arabic, French, Bengali (Standard Bangla and regional dialects: Sylheti, Chattogramia, Noakhailla, Rangpuri, Barishailla), Portuguese, Russian, and Urdu.
 
-You will be given a TARGET SENTENCE (what the learner was asked to say in Standard Bangla) and the TRANSCRIPT that an ASR produced from the learner's audio. Compare the transcript to the target:
-- Which words match, which are missing, mispronounced, or replaced with dialect equivalents.
-- Because ASR is imperfect, unusual spellings or dropped endings usually reveal real pronunciation issues (unclear consonants, wrong vowels, misplaced stress, dialect substitutions).
-- Focus feedback on shifting the learner toward STANDARD BANGLA pronunciation.
+You will be given the LEARNER LANGUAGE they selected, a TARGET SENTENCE (what they were asked to say), and the TRANSCRIPT that an ASR produced from their audio. Compare the transcript to the target: which words match, which are missing, mispronounced, or replaced. Because ASR is imperfect, unusual spellings or dropped endings usually reveal real pronunciation issues (unclear consonants, wrong vowels, misplaced stress).
+
+${isBnDialect ? "The learner speaks a regional Bangla dialect. Coach them toward STANDARD BANGLA (প্রমিত বাংলা) pronunciation.\n\n" : ""}If the transcript is clearly in a language outside the supported list, politely say so in the "overall" field, set score to null, and return empty arrays.
 
 Return a concise JSON object with this exact shape:
 {
-  "score": number|null (0-100, how closely the transcript matches the target in Standard Bangla),
+  "score": number|null (0-100, how closely the transcript matches the target),
   "overall": string (1-2 sentence summary of accuracy vs. the target),
   "strengths": string[] (0-3 short bullets),
   "issues": [
@@ -47,9 +77,9 @@ Return a concise JSON object with this exact shape:
 Only return JSON. No markdown, no code fences.`;
 
         const targetBlock = target
-          ? `TARGET SENTENCE (Standard Bangla): ${target}${targetMeaning ? `\nMEANING: ${targetMeaning}` : ""}\n\n`
+          ? `TARGET SENTENCE: ${target}${targetMeaning ? `\nMEANING (English): ${targetMeaning}` : ""}\n\n`
           : "";
-        const userPrompt = `LANGUAGE/DIALECT: ${langLabel}\nRespond in the SAME language as the transcript (Bangla for Bangla/dialect input, English for English input) for "overall", "strengths", "problem", "tip", and "practiceTip". Keep the JSON keys in English.\n\n${targetBlock}TRANSCRIPT: ${transcript}`;
+        const userPrompt = `LEARNER LANGUAGE: ${langLabel}\nRespond in the SAME language as the transcript for "overall", "strengths", "problem", "tip", and "practiceTip". Keep the JSON keys in English.\n\n${targetBlock}TRANSCRIPT: ${transcript}`;
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
