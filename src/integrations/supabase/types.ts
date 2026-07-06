@@ -14,7 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pronunciation_sessions: {
+        Row: {
+          created_at: string
+          dialect: string | null
+          guest_id: string | null
+          id: string
+          issues: Json | null
+          language: string | null
+          level: string | null
+          practice_tip: string | null
+          score: number | null
+          strengths: Json | null
+          target_sentence: string | null
+          transcript: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          dialect?: string | null
+          guest_id?: string | null
+          id?: string
+          issues?: Json | null
+          language?: string | null
+          level?: string | null
+          practice_tip?: string | null
+          score?: number | null
+          strengths?: Json | null
+          target_sentence?: string | null
+          transcript?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          dialect?: string | null
+          guest_id?: string | null
+          id?: string
+          issues?: Json | null
+          language?: string | null
+          level?: string | null
+          practice_tip?: string | null
+          score?: number | null
+          strengths?: Json | null
+          target_sentence?: string | null
+          transcript?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          auto_difficulty: boolean | null
+          created_at: string
+          guest_id: string | null
+          id: string
+          preferred_language: string | null
+          preferred_output_lang: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          auto_difficulty?: boolean | null
+          created_at?: string
+          guest_id?: string | null
+          id?: string
+          preferred_language?: string | null
+          preferred_output_lang?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          auto_difficulty?: boolean | null
+          created_at?: string
+          guest_id?: string | null
+          id?: string
+          preferred_language?: string | null
+          preferred_output_lang?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
