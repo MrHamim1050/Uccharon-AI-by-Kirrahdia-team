@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { authedFetch } from "@/lib/authed-fetch";
 import {
   SENTENCE_BANK,
   randomSentence,
