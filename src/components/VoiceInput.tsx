@@ -789,7 +789,8 @@ export function VoiceInput() {
               className="rounded-2xl bg-background/40 backdrop-blur border-border/60 text-base"
             />
           )}
-        </div>
+        </section>
+
 
         {audioUrl && (
           <div className="space-y-2">
