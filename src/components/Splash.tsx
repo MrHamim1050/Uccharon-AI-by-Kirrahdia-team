@@ -75,7 +75,7 @@ export function Splash() {
           transition={{ duration: 0.6, delay: 2.4 }}
           className="max-w-sm text-sm sm:text-base text-white/70"
         >
-          Speak Naturally. Learn Perfect Bengali. Powered by AI.
+          AI Language Pronunciation Coach
         </motion.p>
       </div>
     </motion.div>

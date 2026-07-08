@@ -28,25 +28,16 @@ export function Welcome({ onStart }: { onStart: () => void }) {
         transition={{ delay: 0.3, duration: 0.6 }}
         className="font-display text-4xl sm:text-6xl font-bold tracking-tight"
       >
-        <span className="text-gradient">Uccharon AI</span> — Master Standard Bengali Pronunciation
+        <span className="text-gradient">Uccharon AI</span> — Master your Pronunciation with AI Language Coach
       </motion.h1>
 
       <motion.p
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.45, duration: 0.6 }}
-        className="mt-4 max-w-xl text-base sm:text-lg text-muted-foreground"
+        className="mt-4 text-sm text-muted-foreground/80"
       >
-        Master Standard Bengali Pronunciation Using Artificial Intelligence
-      </motion.p>
-
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.55, duration: 0.6 }}
-        className="mt-2 text-sm text-muted-foreground/80"
-      >
-        Practice. Improve. Speak Confidently.
+        Speak. Learn. Grow.
       </motion.p>
 
       <motion.button
