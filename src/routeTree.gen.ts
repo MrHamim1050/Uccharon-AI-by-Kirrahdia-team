@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuideBengaliPronunciationRouteImport } from './routes/guide.bengali-pronunciation'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 import { Route as ApiAnalyzePronunciationRouteImport } from './routes/api/analyze-pronunciation'
@@ -26,6 +27,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuideBengaliPronunciationRoute =
+  GuideBengaliPronunciationRouteImport.update({
+    id: '/guide/bengali-pronunciation',
+    path: '/guide/bengali-pronunciation',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
   id: '/api/tts',
   path: '/api/tts',
@@ -53,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
+  '/guide/bengali-pronunciation': typeof GuideBengaliPronunciationRoute
   '/api/public/analytics': typeof ApiPublicAnalyticsRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +69,7 @@ export interface FileRoutesByTo {
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
+  '/guide/bengali-pronunciation': typeof GuideBengaliPronunciationRoute
   '/api/public/analytics': typeof ApiPublicAnalyticsRoute
 }
 export interface FileRoutesById {
@@ -70,6 +79,7 @@ export interface FileRoutesById {
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
+  '/guide/bengali-pronunciation': typeof GuideBengaliPronunciationRoute
   '/api/public/analytics': typeof ApiPublicAnalyticsRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +90,7 @@ export interface FileRouteTypes {
     | '/api/analyze-pronunciation'
     | '/api/transcribe'
     | '/api/tts'
+    | '/guide/bengali-pronunciation'
     | '/api/public/analytics'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +99,7 @@ export interface FileRouteTypes {
     | '/api/analyze-pronunciation'
     | '/api/transcribe'
     | '/api/tts'
+    | '/guide/bengali-pronunciation'
     | '/api/public/analytics'
   id:
     | '__root__'
@@ -96,6 +108,7 @@ export interface FileRouteTypes {
     | '/api/analyze-pronunciation'
     | '/api/transcribe'
     | '/api/tts'
+    | '/guide/bengali-pronunciation'
     | '/api/public/analytics'
   fileRoutesById: FileRoutesById
 }
@@ -105,6 +118,7 @@ export interface RootRouteChildren {
   ApiAnalyzePronunciationRoute: typeof ApiAnalyzePronunciationRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  GuideBengaliPronunciationRoute: typeof GuideBengaliPronunciationRoute
   ApiPublicAnalyticsRoute: typeof ApiPublicAnalyticsRoute
 }
 
@@ -122,6 +136,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide/bengali-pronunciation': {
+      id: '/guide/bengali-pronunciation'
+      path: '/guide/bengali-pronunciation'
+      fullPath: '/guide/bengali-pronunciation'
+      preLoaderRoute: typeof GuideBengaliPronunciationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tts': {
@@ -161,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAnalyzePronunciationRoute: ApiAnalyzePronunciationRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
   ApiTtsRoute: ApiTtsRoute,
+  GuideBengaliPronunciationRoute: GuideBengaliPronunciationRoute,
   ApiPublicAnalyticsRoute: ApiPublicAnalyticsRoute,
 }
 export const routeTree = rootRouteImport
