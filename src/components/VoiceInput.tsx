@@ -690,11 +690,12 @@ export function VoiceInput() {
               </motion.div>
             </AnimatePresence>
           )}
-        </div>
+        </section>
 
 
         {/* Mic */}
-        <div className="flex flex-col items-center gap-5 py-2">
+        <section aria-labelledby="record-heading" className="flex flex-col items-center gap-5 py-2">
+          <h2 id="record-heading" className="sr-only">Record Your Voice</h2>
           <div className="relative">
             {isRecording && (
               <>
