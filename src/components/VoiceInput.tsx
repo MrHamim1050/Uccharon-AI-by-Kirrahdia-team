@@ -343,7 +343,7 @@ export function VoiceInput() {
       form.append("file", blob, `recording.${ext}`);
       form.append("language", language);
 
-      const res = await fetch("/api/transcribe", { method: "POST", body: form });
+      const res = await authedFetch("/api/transcribe", { method: "POST", body: form });
       if (!res.ok) {
         const t = await res.text();
         throw new Error(t || `Transcription failed (${res.status})`);
@@ -366,7 +366,7 @@ export function VoiceInput() {
       const history = getRecurringIssues(language, 2);
       setRecurringIssues(history);
 
-      const res = await fetch("/api/analyze-pronunciation", {
+      const res = await authedFetch("/api/analyze-pronunciation", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning, outputLang: lang, history: history.length > 0 ? history : undefined }),
@@ -435,7 +435,7 @@ export function VoiceInput() {
 
   const playServerTTS = useCallback(async (text: string) => {
     try {
-      const res = await fetch("/api/tts", {
+      const res = await authedFetch("/api/tts", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ text }),
