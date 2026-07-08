@@ -599,11 +599,11 @@ export function VoiceInput() {
                 </SelectContent>
               </Select>
             )}
-          </div>
-        </div>
+        </section>
 
         {/* Target sentence card */}
-        <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent p-5">
+        <section aria-labelledby="target-sentence-heading" className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent p-5">
+          <h2 id="target-sentence-heading" className="sr-only">Target Sentence</h2>
           <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-primary opacity-10 blur-2xl" />
           <div className="relative flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
