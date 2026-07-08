@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ucchararon-ai-by-kirrahdia.lovable.app/sitemap.xml

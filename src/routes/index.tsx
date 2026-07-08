@@ -13,19 +13,35 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Uccharon AI — AI Bengali Pronunciation Coach" },
+      { property: "og:url", content: "https://ucchararon-ai-by-kirrahdia.lovable.app/" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://ucchararon-ai-by-kirrahdia.lovable.app/" },
+    ],
+    scripts: [
       {
-        name: "description",
-        content:
-          "Uccharon AI helps speakers of local Bangla dialects (Sylheti, Chattogramia, and more) master Standard Bengali pronunciation with instant AI feedback.",
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Uccharon AI",
+          operatingSystem: "All",
+          applicationCategory: "EducationalApplication",
+          description:
+            "AI-powered Bengali pronunciation coach for speakers of local dialects mastering Standard Bengali.",
+          url: "https://ucchararon-ai-by-kirrahdia.lovable.app/",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        }),
       },
-      { property: "og:title", content: "Uccharon AI — AI Bengali Pronunciation Coach" },
       {
-        property: "og:description",
-        content: "Speak Naturally. Learn Perfect Bengali. Powered by AI.",
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Uccharon AI",
+          url: "https://ucchararon-ai-by-kirrahdia.lovable.app/",
+        }),
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
 });

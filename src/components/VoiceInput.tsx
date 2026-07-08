@@ -547,7 +547,8 @@ export function VoiceInput() {
       </div>
       <div className="glass rounded-3xl p-6 sm:p-8 space-y-6">
         {/* Language selector — two dropdowns in one box */}
-        <div className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 space-y-3">
+        <section aria-labelledby="practice-settings-heading" className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 space-y-3">
+          <h2 id="practice-settings-heading" className="sr-only">Practice Settings</h2>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <Globe className="h-3.5 w-3.5" />
             Detection language
@@ -599,10 +600,12 @@ export function VoiceInput() {
               </Select>
             )}
           </div>
-        </div>
+        </section>
+
 
         {/* Target sentence card */}
-        <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent p-5">
+        <section aria-labelledby="target-sentence-heading" className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent p-5">
+          <h2 id="target-sentence-heading" className="sr-only">Target Sentence</h2>
           <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-primary opacity-10 blur-2xl" />
           <div className="relative flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -689,11 +692,12 @@ export function VoiceInput() {
               </motion.div>
             </AnimatePresence>
           )}
-        </div>
+        </section>
 
 
         {/* Mic */}
-        <div className="flex flex-col items-center gap-5 py-2">
+        <section aria-labelledby="record-heading" className="flex flex-col items-center gap-5 py-2">
+          <h2 id="record-heading" className="sr-only">Record Your Voice</h2>
           <div className="relative">
             {isRecording && (
               <>
@@ -734,10 +738,11 @@ export function VoiceInput() {
               {isRecording ? `Listening · ${seconds}s` : isBusy ? "Transcribing…" : `${seconds}s`}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Transcription */}
-        <div className="space-y-2">
+        <section aria-labelledby="transcription-heading" className="space-y-2">
+          <h2 id="transcription-heading" className="sr-only">Your Transcription</h2>
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium text-muted-foreground">Your transcription</label>
             {(analysis?.issues?.length ?? 0) > 0 && (
@@ -786,7 +791,8 @@ export function VoiceInput() {
               className="rounded-2xl bg-background/40 backdrop-blur border-border/60 text-base"
             />
           )}
-        </div>
+        </section>
+
 
         {audioUrl && (
           <div className="space-y-2">
