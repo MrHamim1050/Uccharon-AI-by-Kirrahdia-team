@@ -547,7 +547,8 @@ export function VoiceInput() {
       </div>
       <div className="glass rounded-3xl p-6 sm:p-8 space-y-6">
         {/* Language selector — two dropdowns in one box */}
-        <div className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 space-y-3">
+        <section aria-labelledby="practice-settings-heading" className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4 space-y-3">
+          <h2 id="practice-settings-heading" className="sr-only">Practice Settings</h2>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <Globe className="h-3.5 w-3.5" />
             Detection language
