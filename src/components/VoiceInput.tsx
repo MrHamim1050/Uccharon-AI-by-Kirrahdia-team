@@ -531,6 +531,8 @@ export function VoiceInput() {
       try { ttsAudioRef.current.pause(); } catch { /* ignore */ }
       ttsAudioRef.current = null;
     }
+    stopStreamingTTS();
+
     // Languages where browser SpeechSynthesis rarely has voices — go straight
     // to the server TTS so playback actually works.
     const serverOnly: LanguageCode[] = ["bn", "ur", "ar"];
