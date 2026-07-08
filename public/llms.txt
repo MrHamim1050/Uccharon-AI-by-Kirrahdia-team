@@ -1,0 +1,11 @@
+# Uccharon AI
+
+> AI-powered Bengali pronunciation coach that helps speakers of local Bangla dialects (Sylheti, Chattogramia, Noakhailla, Rangpuri, Barishailla) master Standard Bengali pronunciation with instant, word-by-word feedback. Also supports English, Mandarin, Hindi, Spanish, Arabic, French, Portuguese, Russian, and Urdu practice.
+
+Uccharon AI listens to a learner speak a target sentence, transcribes their audio, and returns a score plus targeted tips on which words were mispronounced and how to fix them. Practice levels include Beginner, Intermediate, Advanced, and Freestyle.
+
+## Pages
+- [Home — Practice pronunciation](/): Interactive voice practice with AI feedback for 10 languages and 5 Bangla dialects.
+
+## Optional
+- [Sitemap](/sitemap.xml): Machine-readable list of public routes.
