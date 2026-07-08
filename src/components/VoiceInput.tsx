@@ -562,7 +562,7 @@ export function VoiceInput() {
     } catch {
       void playServerTTS(text);
     }
-  }, [primaryLang, playServerTTS]);
+  }, [primaryLang, playServerTTS, stopStreamingTTS]);
 
 
 
