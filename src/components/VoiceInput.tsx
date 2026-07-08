@@ -760,7 +760,7 @@ export function VoiceInput() {
                   variant="outline"
                   size="icon"
                   className="h-9 w-9 shrink-0 rounded-full border-primary/30 bg-background/60 text-primary hover:bg-primary/10 hover:text-primary"
-                  onClick={() => speakSentence(target.text)}
+                  onClick={() => speakSentence(target.text, target.id)}
                   aria-label="Listen to sentence"
                   title="Listen"
                 >
