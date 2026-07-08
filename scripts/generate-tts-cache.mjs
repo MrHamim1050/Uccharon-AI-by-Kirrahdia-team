@@ -21,25 +21,9 @@ const args = new Set(process.argv.slice(2));
 const only = [...args].find((a) => a.startsWith("--only="))?.split("=")[1];
 const force = args.has("--force");
 
-// Import the sentence bank via a tiny esbuild-free trick: strip TS types.
-// Simpler: just parse it. We'll spawn tsx-less: use dynamic import through a
-// transpile shim.
-const sentencePath = new URL("../src/lib/sentence-bank.ts", import.meta.url);
-const source = readFileSync(sentencePath, "utf8");
-// Strip TS type-only constructs enough for evaluation.
-const jsSource = source
-  .replace(/export type [\s\S]*?;\n/g, "")
-  .replace(/: Record<[^>]+>/g, "")
-  .replace(/: Partial<[^>]+>/g, "")
-  .replace(/: Bank\b/g, "")
-  .replace(/: TargetSentence\b/g, "")
-  .replace(/: LanguageCode\[\]/g, "")
-  .replace(/: BnDialect\[\]/g, "")
-  .replace(/type Bank = [\s\S]*?;\n/g, "")
-  .replace(/export /g, "");
-const tmpModule = join(tmpdir(), `sbank-${Date.now()}.mjs`);
-writeFileSync(tmpModule, jsSource + "\nexport { SENTENCE_BANK };\n");
-const { SENTENCE_BANK } = await import(pathToFileURL(tmpModule).href);
+// Bun natively imports TS — this script is run with `bun`.
+const { SENTENCE_BANK } = await import(new URL("../src/lib/sentence-bank.ts", import.meta.url).href);
+
 
 const OUT = new URL("../src/lib/tts-cache.json", import.meta.url);
 const existing = existsSync(OUT) ? JSON.parse(readFileSync(OUT, "utf8")) : {};
