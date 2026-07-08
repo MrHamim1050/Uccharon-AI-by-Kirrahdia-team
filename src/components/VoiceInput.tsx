@@ -599,7 +599,9 @@ export function VoiceInput() {
                 </SelectContent>
               </Select>
             )}
+          </div>
         </section>
+
 
         {/* Target sentence card */}
         <section aria-labelledby="target-sentence-heading" className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent p-5">
