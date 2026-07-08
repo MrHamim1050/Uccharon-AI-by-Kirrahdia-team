@@ -579,6 +579,19 @@ export function VoiceInput() {
     }
   }, [primaryLang, playServerTTS, stopStreamingTTS]);
 
+  // Warm the browser HTTP cache for the current target's MP3 so the ▶ click
+  // plays instantly.
+  useEffect(() => {
+    const url = (ttsCache as Record<string, string>)[target.id];
+    if (!url) return;
+    const img = new Image();
+    // Using fetch with no-store would defeat caching; a plain fetch primes the disk cache.
+    void fetch(url, { mode: "cors", credentials: "omit" }).catch(() => {});
+    void img;
+  }, [target.id]);
+
+
+
 
 
   const issueMap = useMemo(() => {
