@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuideBengaliPronunciationRouteImport } from './routes/guide.bengali-pronunciation'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
+import { Route as ApiRequestTokenRouteImport } from './routes/api/request-token'
 import { Route as ApiAnalyzePronunciationRouteImport } from './routes/api/analyze-pronunciation'
 import { Route as ApiPublicAnalyticsRouteImport } from './routes/api/public/analytics'
 
@@ -43,6 +44,11 @@ const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
   path: '/api/transcribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRequestTokenRoute = ApiRequestTokenRouteImport.update({
+  id: '/api/request-token',
+  path: '/api/request-token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAnalyzePronunciationRoute = ApiAnalyzePronunciationRouteImport.update({
   id: '/api/analyze-pronunciation',
   path: '/api/analyze-pronunciation',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
+  '/api/request-token': typeof ApiRequestTokenRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/guide/bengali-pronunciation': typeof GuideBengaliPronunciationRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
+  '/api/request-token': typeof ApiRequestTokenRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/guide/bengali-pronunciation': typeof GuideBengaliPronunciationRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
+  '/api/request-token': typeof ApiRequestTokenRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/api/tts': typeof ApiTtsRoute
   '/guide/bengali-pronunciation': typeof GuideBengaliPronunciationRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/'
     | '/sitemap.xml'
     | '/api/analyze-pronunciation'
+    | '/api/request-token'
     | '/api/transcribe'
     | '/api/tts'
     | '/guide/bengali-pronunciation'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/'
     | '/sitemap.xml'
     | '/api/analyze-pronunciation'
+    | '/api/request-token'
     | '/api/transcribe'
     | '/api/tts'
     | '/guide/bengali-pronunciation'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/'
     | '/sitemap.xml'
     | '/api/analyze-pronunciation'
+    | '/api/request-token'
     | '/api/transcribe'
     | '/api/tts'
     | '/guide/bengali-pronunciation'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiAnalyzePronunciationRoute: typeof ApiAnalyzePronunciationRoute
+  ApiRequestTokenRoute: typeof ApiRequestTokenRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
   ApiTtsRoute: typeof ApiTtsRoute
   GuideBengaliPronunciationRoute: typeof GuideBengaliPronunciationRoute
@@ -159,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTranscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/request-token': {
+      id: '/api/request-token'
+      path: '/api/request-token'
+      fullPath: '/api/request-token'
+      preLoaderRoute: typeof ApiRequestTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/analyze-pronunciation': {
       id: '/api/analyze-pronunciation'
       path: '/api/analyze-pronunciation'
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiAnalyzePronunciationRoute: ApiAnalyzePronunciationRoute,
+  ApiRequestTokenRoute: ApiRequestTokenRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
   ApiTtsRoute: ApiTtsRoute,
   GuideBengaliPronunciationRoute: GuideBengaliPronunciationRoute,
