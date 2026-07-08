@@ -31,7 +31,7 @@ export function AppHeader() {
                 Uccharon <span className="text-gradient">AI</span>
               </div>
               <div className="hidden sm:block text-[11px] text-muted-foreground leading-tight">
-                AI Bengali Pronunciation Coach
+                AI Language Pronunciation Coach
               </div>
             </div>
           </div>
