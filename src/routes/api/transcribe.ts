@@ -142,6 +142,13 @@ export const Route = createFileRoute("/api/transcribe")({
             headers: { "content-type": "application/json" },
           });
         }
+        const { verifyRequestToken } = await import("@/lib/request-token.server");
+        if (!verifyRequestToken(request.headers.get("x-request-token"))) {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            status: 403,
+            headers: { "content-type": "application/json" },
+          });
+        }
         const apiKey = process.env.LOVABLE_API_KEY;
         if (!apiKey) {
           return new Response(JSON.stringify({ error: "Service unavailable" }), {
@@ -158,6 +165,15 @@ export const Route = createFileRoute("/api/transcribe")({
             headers: { "content-type": "application/json" },
           });
         }
+
+        const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // 25 MB
+        if (file.size > MAX_AUDIO_BYTES) {
+          return new Response(
+            JSON.stringify({ error: "Audio file too large (max 25 MB)" }),
+            { status: 413, headers: { "content-type": "application/json" } },
+          );
+        }
+
 
         const languageRaw = form.get("language");
         const language = typeof languageRaw === "string" ? languageRaw : undefined;

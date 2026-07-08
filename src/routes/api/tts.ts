@@ -8,6 +8,11 @@ export const Route = createFileRoute("/api/tts")({
         if (!isSameOriginRequest(request)) {
           return new Response("Forbidden", { status: 403 });
         }
+        const { verifyRequestToken } = await import("@/lib/request-token.server");
+        if (!verifyRequestToken(request.headers.get("x-request-token"))) {
+          return new Response("Forbidden", { status: 403 });
+        }
+
 
         let body: { text?: string; voice?: string } = {};
         try {

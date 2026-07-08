@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { isSameOriginRequest } from "@/lib/request-guard";
+
 
 const ALLOWED_LANG_BASES = new Set([
   "en", "zh", "hi", "es", "ar", "fr", "bn", "pt", "ru", "ur",
@@ -28,7 +30,11 @@ export const Route = createFileRoute("/api/public/analytics")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        if (!isSameOriginRequest(request)) {
+          return Response.json({ error: "Forbidden" }, { status: 403 });
+        }
         let body: {
+
           language?: unknown;
           dialect?: unknown;
           issue_pattern?: unknown;
