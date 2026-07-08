@@ -526,8 +526,21 @@ export function VoiceInput() {
   }, [stopStreamingTTS]);
 
 
-  const speakSentence = useCallback((text: string) => {
+  const speakSentence = useCallback((text: string, id?: string) => {
     if (!text) return;
+    // Pre-generated MP3 from the CDN — instant playback, no server round-trip.
+    const cachedUrl = id ? (ttsCache as Record<string, string>)[id] : undefined;
+    if (cachedUrl) {
+      stopStreamingTTS();
+      if (ttsAudioRef.current) {
+        try { ttsAudioRef.current.pause(); } catch { /* ignore */ }
+      }
+      const audio = new Audio(cachedUrl);
+      ttsAudioRef.current = audio;
+      void audio.play().catch(() => {});
+      return;
+    }
+
     // Stop any in-flight audio.
     if (ttsAudioRef.current) {
       try { ttsAudioRef.current.pause(); } catch { /* ignore */ }
