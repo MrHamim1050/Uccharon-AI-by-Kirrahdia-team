@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { isSameOriginRequest } from "@/lib/request-guard";
+
 
 const ALLOWED_LANG_BASES = new Set([
   "en", "zh", "hi", "es", "ar", "fr", "bn", "pt", "ru", "ur",
