@@ -1,17 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { isSameOriginRequest } from "@/lib/request-guard";
 
+// Strip control chars, collapse whitespace, cap length. Applied to any free-text
+// field embedded into the AI prompt so a crafted transcript/target can't inject
+// new instructions or exfiltrate the system prompt.
+function sanitizePromptText(raw: unknown, maxLen: number): string {
+  if (typeof raw !== "string") return "";
+  return raw
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLen);
+}
+
 function sanitizeHistory(
   raw: unknown,
 ): { pattern: string; count: number; lastTip: string }[] {
   if (!Array.isArray(raw)) return [];
-  const strip = (s: string) => s.replace(/[\r\n\t\u0000-\u001F\u007F]/g, " ").trim();
   return raw
     .slice(0, 5)
     .map((h) => {
       if (!h || typeof h !== "object") return null;
-      const pattern = typeof (h as any).pattern === "string" ? strip((h as any).pattern).slice(0, 80) : "";
-      const lastTip = typeof (h as any).lastTip === "string" ? strip((h as any).lastTip).slice(0, 160) : "";
+      const pattern = sanitizePromptText((h as any).pattern, 80);
+      const lastTip = sanitizePromptText((h as any).lastTip, 160);
       const rawCount = Number((h as any).count);
       const count = Number.isFinite(rawCount) && rawCount > 0 ? Math.min(Math.floor(rawCount), 9999) : 0;
       if (!pattern) return null;
@@ -19,6 +30,7 @@ function sanitizeHistory(
     })
     .filter((x): x is { pattern: string; count: number; lastTip: string } => x !== null);
 }
+
 
 const LANG_NAMES: Record<string, string> = {
   en: "English",
