@@ -33,6 +33,8 @@ import {
   type BnDialect,
   type TargetSentence,
 } from "@/lib/sentence-bank";
+import ttsCache from "@/lib/tts-cache.json";
+
 import { Globe } from "lucide-react";
 import type { EnhancedAudio } from "@/lib/audio-enhance";
 import {
