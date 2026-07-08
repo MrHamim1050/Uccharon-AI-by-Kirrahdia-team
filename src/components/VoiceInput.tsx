@@ -33,6 +33,8 @@ import {
   type BnDialect,
   type TargetSentence,
 } from "@/lib/sentence-bank";
+import ttsCache from "@/lib/tts-cache.json";
+
 import { Globe } from "lucide-react";
 import type { EnhancedAudio } from "@/lib/audio-enhance";
 import {
@@ -524,8 +526,21 @@ export function VoiceInput() {
   }, [stopStreamingTTS]);
 
 
-  const speakSentence = useCallback((text: string) => {
+  const speakSentence = useCallback((text: string, id?: string) => {
     if (!text) return;
+    // Pre-generated MP3 from the CDN — instant playback, no server round-trip.
+    const cachedUrl = id ? (ttsCache as Record<string, string>)[id] : undefined;
+    if (cachedUrl) {
+      stopStreamingTTS();
+      if (ttsAudioRef.current) {
+        try { ttsAudioRef.current.pause(); } catch { /* ignore */ }
+      }
+      const audio = new Audio(cachedUrl);
+      ttsAudioRef.current = audio;
+      void audio.play().catch(() => {});
+      return;
+    }
+
     // Stop any in-flight audio.
     if (ttsAudioRef.current) {
       try { ttsAudioRef.current.pause(); } catch { /* ignore */ }
@@ -563,6 +578,19 @@ export function VoiceInput() {
       void playServerTTS(text);
     }
   }, [primaryLang, playServerTTS, stopStreamingTTS]);
+
+  // Warm the browser HTTP cache for the current target's MP3 so the ▶ click
+  // plays instantly.
+  useEffect(() => {
+    const url = (ttsCache as Record<string, string>)[target.id];
+    if (!url) return;
+    const img = new Image();
+    // Using fetch with no-store would defeat caching; a plain fetch primes the disk cache.
+    void fetch(url, { mode: "cors", credentials: "omit" }).catch(() => {});
+    void img;
+  }, [target.id]);
+
+
 
 
 
@@ -745,7 +773,7 @@ export function VoiceInput() {
                   variant="outline"
                   size="icon"
                   className="h-9 w-9 shrink-0 rounded-full border-primary/30 bg-background/60 text-primary hover:bg-primary/10 hover:text-primary"
-                  onClick={() => speakSentence(target.text)}
+                  onClick={() => speakSentence(target.text, target.id)}
                   aria-label="Listen to sentence"
                   title="Listen"
                 >
