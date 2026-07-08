@@ -93,6 +93,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Uccharon AI helps speakers of local Bangla dialects (Sylheti, Chattogramia, and more) master Standard Bengali pronunciation with instant AI feedback.",
       },
       { property: "og:url", content: "https://ucchararon-ai-by-kirrahdia.lovable.app/" },
+      {
+        name: "google-site-verification",
+        content: "bP-iKA2KbwD_WtJZnUcoEZa0HJqlhafQk3iq2sUiqAA",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Uccharon AI — AI Bengali Pronunciation Coach" },
       {
