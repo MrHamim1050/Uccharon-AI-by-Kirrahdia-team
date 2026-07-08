@@ -736,10 +736,11 @@ export function VoiceInput() {
               {isRecording ? `Listening · ${seconds}s` : isBusy ? "Transcribing…" : `${seconds}s`}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Transcription */}
-        <div className="space-y-2">
+        <section aria-labelledby="transcription-heading" className="space-y-2">
+          <h2 id="transcription-heading" className="sr-only">Your Transcription</h2>
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium text-muted-foreground">Your transcription</label>
             {(analysis?.issues?.length ?? 0) > 0 && (
