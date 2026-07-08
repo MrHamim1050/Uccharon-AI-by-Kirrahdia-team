@@ -42,8 +42,10 @@ export const Route = createFileRoute("/api/tts")({
               model: "openai/gpt-4o-mini-tts",
               input: capped,
               voice,
-              response_format: "mp3",
+              stream_format: "sse",
+              response_format: "pcm",
             }),
+            signal: request.signal,
           });
 
           if (!upstream.ok) {
@@ -52,15 +54,19 @@ export const Route = createFileRoute("/api/tts")({
             return new Response("TTS failed", { status: 502 });
           }
 
+          // Pass the SSE body straight through — no buffering, no transform.
           return new Response(upstream.body, {
             headers: {
-              "Content-Type": "audio/mpeg",
+              "Content-Type": "text/event-stream",
               "Cache-Control": "no-store",
+              "X-Accel-Buffering": "no",
             },
           });
         } catch {
+          if (request.signal.aborted) return new Response(null, { status: 499 });
           return new Response("TTS failed", { status: 502 });
         }
+
       },
     },
   },

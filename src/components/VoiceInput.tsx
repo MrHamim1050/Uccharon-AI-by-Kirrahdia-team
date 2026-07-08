@@ -432,26 +432,97 @@ export function VoiceInput() {
 
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
   const ttsUrlRef = useRef<string | null>(null);
+  const ttsAbortRef = useRef<AbortController | null>(null);
+  const ttsCtxRef = useRef<AudioContext | null>(null);
+  const ttsSourcesRef = useRef<AudioBufferSourceNode[]>([]);
+
+  const stopStreamingTTS = useCallback(() => {
+    if (ttsAbortRef.current) {
+      try { ttsAbortRef.current.abort(); } catch { /* ignore */ }
+      ttsAbortRef.current = null;
+    }
+    for (const s of ttsSourcesRef.current) {
+      try { s.stop(); } catch { /* ignore */ }
+    }
+    ttsSourcesRef.current = [];
+  }, []);
 
   const playServerTTS = useCallback(async (text: string) => {
+    stopStreamingTTS();
+    const abort = new AbortController();
+    ttsAbortRef.current = abort;
     try {
       const res = await authedFetch("/api/tts", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ text }),
+        signal: abort.signal,
       });
-      if (!res.ok) return;
-      const blob = await res.blob();
-      if (ttsUrlRef.current) URL.revokeObjectURL(ttsUrlRef.current);
-      const url = URL.createObjectURL(blob);
-      ttsUrlRef.current = url;
-      const audio = new Audio(url);
-      ttsAudioRef.current = audio;
-      await audio.play().catch(() => {});
+      if (!res.ok || !res.body) return;
+
+      const { createParser } = await import("eventsource-parser");
+
+      const AudioCtx = (window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
+      const ctx = ttsCtxRef.current ?? new AudioCtx({ sampleRate: 24000 });
+      ttsCtxRef.current = ctx;
+      if (ctx.state === "suspended") await ctx.resume().catch(() => {});
+
+      let playhead = 0;
+      let pending = new Uint8Array(0);
+
+      const playChunk = (incoming: Uint8Array) => {
+        const bytes = new Uint8Array(pending.length + incoming.length);
+        bytes.set(pending);
+        bytes.set(incoming, pending.length);
+        const usable = bytes.length - (bytes.length % 2);
+        pending = bytes.slice(usable);
+        if (usable === 0) return;
+        const samples = new Int16Array(bytes.buffer, 0, usable / 2);
+        const floats = new Float32Array(samples.length);
+        for (let i = 0; i < samples.length; i++) floats[i] = samples[i] / 32768;
+        const buffer = ctx.createBuffer(1, floats.length, 24000);
+        buffer.copyToChannel(floats, 0);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        if (playhead === 0) {
+          playhead = ctx.currentTime + 0.05;
+        } else {
+          playhead = Math.max(playhead, ctx.currentTime);
+        }
+        source.start(playhead);
+        playhead += buffer.duration;
+        ttsSourcesRef.current.push(source);
+        source.onended = () => {
+          ttsSourcesRef.current = ttsSourcesRef.current.filter((s) => s !== source);
+        };
+      };
+
+      const parser = createParser({
+        onEvent(event) {
+          if (!event.data) return;
+          let payload: { type?: string; audio?: string };
+          try { payload = JSON.parse(event.data); } catch { return; }
+          if (payload.type !== "speech.audio.delta" || !payload.audio) return;
+          const binary = atob(payload.audio);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          playChunk(bytes);
+        },
+      });
+
+      const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        parser.feed(value);
+      }
     } catch {
-      /* ignore */
+      /* ignore (includes aborts) */
     }
-  }, []);
+  }, [stopStreamingTTS]);
+
 
   const speakSentence = useCallback((text: string) => {
     if (!text) return;
@@ -460,6 +531,8 @@ export function VoiceInput() {
       try { ttsAudioRef.current.pause(); } catch { /* ignore */ }
       ttsAudioRef.current = null;
     }
+    stopStreamingTTS();
+
     // Languages where browser SpeechSynthesis rarely has voices — go straight
     // to the server TTS so playback actually works.
     const serverOnly: LanguageCode[] = ["bn", "ur", "ar"];
@@ -489,7 +562,7 @@ export function VoiceInput() {
     } catch {
       void playServerTTS(text);
     }
-  }, [primaryLang, playServerTTS]);
+  }, [primaryLang, playServerTTS, stopStreamingTTS]);
 
 
 
