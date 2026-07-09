@@ -371,11 +371,35 @@ export function VoiceInput() {
       const history = getRecurringIssues(language, 2);
       setRecurringIssues(history);
 
-      const res = await authedFetch("/api/analyze-pronunciation", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning, outputLang: lang, history: history.length > 0 ? history : undefined }),
-      });
+      let res: Response;
+      if (directMode && audioBlobRef.current) {
+        const { blob, mime } = audioBlobRef.current;
+        const ext = pickExt(mime);
+        const form = new FormData();
+        form.append("file", blob, `recording.${ext}`);
+        form.append("language", language);
+        form.append("outputLang", lang);
+        if (level !== "freestyle") {
+          form.append("target", target.text);
+          if (target.meaning) form.append("targetMeaning", target.meaning);
+        }
+        if (history.length > 0) form.append("history", JSON.stringify(history));
+        res = await authedFetch("/api/analyze-audio", { method: "POST", body: form });
+      } else {
+        res = await authedFetch("/api/analyze-pronunciation", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            transcript,
+            altTranscript: altTranscriptRef.current ?? undefined,
+            language,
+            target: level === "freestyle" ? undefined : target.text,
+            targetMeaning: level === "freestyle" ? undefined : target.meaning,
+            outputLang: lang,
+            history: history.length > 0 ? history : undefined,
+          }),
+        });
+      }
       if (!res.ok) {
         const t = await res.text();
         throw new Error(t || `AI analysis failed (${res.status})`);
