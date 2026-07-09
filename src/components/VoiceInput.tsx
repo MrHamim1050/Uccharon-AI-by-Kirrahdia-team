@@ -730,6 +730,42 @@ export function VoiceInput() {
               </Select>
             )}
           </div>
+
+          {/* Direct Audio Mode toggle — model listens to the recording itself
+              instead of only reading the transcript. Works for all levels
+              (Beginner → Freestyle). */}
+          <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="min-w-0">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Direct audio mode
+              </div>
+              <div className="text-[11px] text-muted-foreground/80 mt-0.5">
+                {directMode
+                  ? "AI listens to your voice directly — more accurate pronunciation feedback."
+                  : "AI reads only the transcript — faster, less nuanced."}
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={directMode}
+              aria-label="Toggle direct audio mode"
+              onClick={() => !analyzing && setDirectMode((v) => !v)}
+              disabled={analyzing}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                directMode ? "bg-gradient-primary shadow-glow" : "bg-muted",
+                analyzing && "opacity-60 cursor-not-allowed",
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-5 w-5 transform rounded-full bg-background shadow transition-transform",
+                  directMode ? "translate-x-5" : "translate-x-0.5",
+                )}
+              />
+            </button>
+          </div>
         </section>
 
 
