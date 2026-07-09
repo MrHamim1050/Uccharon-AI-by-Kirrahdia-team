@@ -167,7 +167,7 @@ export function VoiceInput() {
   const [outputLang, setOutputLang] = useState<"en" | "bn">("bn");
   const [directMode, setDirectMode] = useState<boolean>(true);
   const [recurringIssues, setRecurringIssues] = useState<{ pattern: string; count: number; lastTip: string }[]>([]);
-  const [adaptiveSuggestion, setAdaptiveSuggestion] = useState<string | null>(null);
+  
 
   // Compose the language code sent to the backend (e.g. "bn-sylheti" or "en").
   const language = useMemo(() => {
