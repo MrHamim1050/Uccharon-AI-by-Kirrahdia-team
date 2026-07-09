@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 const URL = "https://ucchararon-ai-by-kirrahdia.lovable.app/guide/bengali-pronunciation";
 const TITLE = "How to Learn Bengali Pronunciation — A Step-by-Step Guide";
 const DESCRIPTION =
-  "A practical guide to mastering Standard Bengali pronunciation from local dialects like Sylheti, Chattogramia, and Noakhali — vowels, consonants, common mistakes, and daily practice drills.";
+  "A practical guide to mastering Standard Bengali pronunciation from local dialects like Sylheti, Chatgaiya, and Noakhali — vowels, consonants, common mistakes, and daily practice drills.";
 
 export const Route = createFileRoute("/guide/bengali-pronunciation")({
   head: () => ({
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/guide/bengali-pronunciation")({
           step: [
             { "@type": "HowToStep", name: "Learn the vowel system", text: "Master Bengali's 7 vowel sounds and nasalization before touching consonants." },
             { "@type": "HowToStep", name: "Drill the consonant contrasts", text: "Focus on aspirated vs unaspirated (ক/খ, প/ফ) and dental vs retroflex (ত/ট) pairs." },
-            { "@type": "HowToStep", name: "Fix your dialect substitutions", text: "Identify the Sylheti, Chattogramia, or Noakhali sounds you swap in for Standard Bengali equivalents." },
+            { "@type": "HowToStep", name: "Fix your dialect substitutions", text: "Identify the Sylheti, Chatgaiya, or Noakhali sounds you swap in for Standard Bengali equivalents." },
             { "@type": "HowToStep", name: "Practice minimal pairs daily", text: "Use word pairs that differ by one sound (কাল/খাল, বাড়ি/বারি) and record yourself." },
             { "@type": "HowToStep", name: "Get instant feedback", text: "Use an AI pronunciation coach like Uccharon AI to score each attempt and flag exact errors." },
           ],
@@ -92,7 +92,7 @@ function GuidePage() {
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
           A step-by-step guide to mastering Standard Bengali (প্রমিত বাংলা) if you grew up
-          speaking Sylheti, Chattogramia, Noakhali, or another local dialect.
+          speaking Sylheti, Chatgaiya, Noakhali, or another local dialect.
         </p>
       </header>
 
@@ -141,7 +141,7 @@ function GuidePage() {
         <p>The most common swaps to reverse:</p>
         <ul className="list-disc pl-6 space-y-1">
           <li><strong>Sylheti:</strong> <em>স → হ</em> (shesh → hesh), missing aspiration, dropped final vowels.</li>
-          <li><strong>Chattogramia:</strong> heavy nasalization, <em>চ → ছ</em> shifts, tonal patterns.</li>
+          <li><strong>Chatgaiya:</strong> heavy nasalization, <em>চ → ছ</em> shifts, tonal patterns.</li>
           <li><strong>Noakhali:</strong> <em>র → গ</em> in some positions, altered vowel length.</li>
         </ul>
         <p>
