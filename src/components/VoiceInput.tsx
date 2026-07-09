@@ -973,33 +973,42 @@ export function VoiceInput() {
           </div>
         )}
 
-        <motion.button
-          whileHover={{ scale: transcript.trim() && !analyzing ? 1.01 : 1 }}
-          whileTap={{ scale: 0.99 }}
-          onClick={() => analyzeWithAI()}
-          disabled={!transcript.trim() || analyzing}
-          className={cn(
-            "relative flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-semibold text-primary-foreground shadow-glow overflow-hidden",
-            "bg-gradient-primary animate-gradient",
-            (!transcript.trim() || analyzing) && "opacity-60 cursor-not-allowed",
-          )}
-        >
-          {analyzing && (
-            <span
-              className="absolute inset-0 opacity-40"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
-                backgroundSize: "200% 100%",
-                animation: "shimmer 1.4s linear infinite",
-              }}
-            />
-          )}
-          <span className="relative flex items-center gap-2">
-            {analyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-            {analyzing ? "Analyzing your pronunciation…" : "Analyze My Pronunciation"}
-          </span>
-        </motion.button>
+        {(() => {
+          const canAnalyze = directMode ? !!audioBlobRef.current : !!transcript.trim();
+          return (
+            <motion.button
+              whileHover={{ scale: canAnalyze && !analyzing ? 1.01 : 1 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => analyzeWithAI()}
+              disabled={!canAnalyze || analyzing}
+              className={cn(
+                "relative flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-semibold text-primary-foreground shadow-glow overflow-hidden",
+                "bg-gradient-primary animate-gradient",
+                (!canAnalyze || analyzing) && "opacity-60 cursor-not-allowed",
+              )}
+            >
+              {analyzing && (
+                <span
+                  className="absolute inset-0 opacity-40"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 1.4s linear infinite",
+                  }}
+                />
+              )}
+              <span className="relative flex items-center gap-2">
+                {analyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                {analyzing
+                  ? "Analyzing your pronunciation…"
+                  : directMode
+                    ? "Analyze My Voice (Direct)"
+                    : "Analyze My Pronunciation"}
+              </span>
+            </motion.button>
+          );
+        })()}
       </div>
 
       {/* Analysis dashboard */}
