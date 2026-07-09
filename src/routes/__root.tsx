@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Uccharon AI helps speakers of local Bangla dialects (Sylheti, Chattogramia, and more) master Standard Bengali pronunciation with instant AI feedback.",
+          "Uccharon AI helps speakers of local Bangla dialects (Sylheti, Chatgaiya, and more) master Standard Bengali pronunciation with instant AI feedback.",
       },
       { name: "author", content: "Uccharon AI" },
       { property: "og:site_name", content: "Uccharon AI" },
@@ -90,7 +90,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "Uccharon AI helps speakers of local Bangla dialects (Sylheti, Chattogramia, and more) master Standard Bengali pronunciation with instant AI feedback.",
+          "Uccharon AI helps speakers of local Bangla dialects (Sylheti, Chatgaiya, and more) master Standard Bengali pronunciation with instant AI feedback.",
       },
       { property: "og:url", content: "https://ucchararon-ai-by-kirrahdia.lovable.app/" },
       {
@@ -102,7 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "twitter:description",
         content:
-          "Uccharon AI helps speakers of local Bangla dialects (Sylheti, Chattogramia, and more) master Standard Bengali pronunciation with instant AI feedback.",
+          "Uccharon AI helps speakers of local Bangla dialects (Sylheti, Chatgaiya, and more) master Standard Bengali pronunciation with instant AI feedback.",
       },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4dad5b79-5488-4ec3-842c-0be7ae839717/id-preview-61373909--ae4fb92a-76f2-438e-bb67-76d82ba01862.lovable.app-1783269101296.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4dad5b79-5488-4ec3-842c-0be7ae839717/id-preview-61373909--ae4fb92a-76f2-438e-bb67-76d82ba01862.lovable.app-1783269101296.png" },
