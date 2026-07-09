@@ -380,6 +380,16 @@ export function VoiceInput() {
 
   async function analyzeWithAI(langOverride?: "en" | "bn") {
     const lang = langOverride ?? outputLang;
+    const isTranslateOnly = langOverride !== undefined;
+
+    // If we already have a cached analysis for this language (from a previous
+    // translate toggle), reuse it — no extra AI round-trip, no score drift.
+    const cached = analysisCacheRef.current[lang];
+    if (isTranslateOnly && cached) {
+      setAnalysis(cached);
+      return;
+    }
+
     setAnalyzing(true);
     setError(null);
     try {
@@ -420,34 +430,48 @@ export function VoiceInput() {
         throw new Error(t || `AI analysis failed (${res.status})`);
       }
       const data = (await res.json()) as Analysis;
-      setAnalysis(data);
 
-      // Save session to local history for future learning
-      saveSession({
-        language,
-        dialect: primaryLang === "bn" && dialect !== "standard" ? dialect : null,
-        level,
-        targetSentence: level === "freestyle" ? null : target.text,
-        transcript,
-        score: data.score ?? null,
-        issues: data.issues ?? [],
-        strengths: data.strengths ?? [],
-        practiceTip: data.practiceTip ?? "",
-      });
+      // Preserve the original numeric fields on translate-only re-runs so the
+      // score/metrics never drift between language toggles.
+      let finalData = data;
+      const anyCached = analysisCacheRef.current.bn ?? analysisCacheRef.current.en;
+      if (isTranslateOnly && anyCached) {
+        finalData = {
+          ...data,
+          score: anyCached.score ?? data.score,
+        };
+      }
+      analysisCacheRef.current[lang] = finalData;
+      setAnalysis(finalData);
 
-      // Compute adaptive suggestion after saving
-      const avg = getAverageScore(language, 5);
-      const count = getSessionCount(language);
-      if (avg !== null && count >= 3) {
-        if (avg > 85 && level !== "advanced") {
-          setAdaptiveSuggestion(`Great work! Your average score is ${Math.round(avg)}. Try the next level up.`);
-        } else if (avg < 50 && level !== "beginner") {
-          setAdaptiveSuggestion(`Your average score is ${Math.round(avg)}. Consider practicing at a lower level to build confidence.`);
+      // Only save the session on the first analysis, not on translate toggles.
+      if (!isTranslateOnly) {
+        saveSession({
+          language,
+          dialect: primaryLang === "bn" && dialect !== "standard" ? dialect : null,
+          level,
+          targetSentence: level === "freestyle" ? null : target.text,
+          transcript,
+          score: finalData.score ?? null,
+          issues: finalData.issues ?? [],
+          strengths: finalData.strengths ?? [],
+          practiceTip: finalData.practiceTip ?? "",
+        });
+
+        // Compute adaptive suggestion after saving
+        const avg = getAverageScore(language, 5);
+        const count = getSessionCount(language);
+        if (avg !== null && count >= 3) {
+          if (avg > 85 && level !== "advanced") {
+            setAdaptiveSuggestion(`Great work! Your average score is ${Math.round(avg)}. Try the next level up.`);
+          } else if (avg < 50 && level !== "beginner") {
+            setAdaptiveSuggestion(`Your average score is ${Math.round(avg)}. Consider practicing at a lower level to build confidence.`);
+          } else {
+            setAdaptiveSuggestion(null);
+          }
         } else {
           setAdaptiveSuggestion(null);
         }
-      } else {
-        setAdaptiveSuggestion(null);
       }
     } catch (e: any) {
       setError(e.message ?? "AI analysis failed");
