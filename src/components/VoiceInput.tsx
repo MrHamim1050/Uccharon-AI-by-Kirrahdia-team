@@ -167,6 +167,7 @@ export function VoiceInput() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [outputLang, setOutputLang] = useState<"en" | "bn">("bn");
+  const [directMode, setDirectMode] = useState<boolean>(true);
   const [recurringIssues, setRecurringIssues] = useState<{ pattern: string; count: number; lastTip: string }[]>([]);
   const [adaptiveSuggestion, setAdaptiveSuggestion] = useState<string | null>(null);
 
@@ -183,6 +184,7 @@ export function VoiceInput() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const altTranscriptRef = useRef<string | null>(null);
+  const audioBlobRef = useRef<{ blob: Blob; mime: string } | null>(null);
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -341,6 +343,7 @@ export function VoiceInput() {
       }
       const ext = pickExt(mime);
       setAudioUrl(URL.createObjectURL(blob));
+      audioBlobRef.current = { blob, mime };
       const form = new FormData();
       form.append("file", blob, `recording.${ext}`);
       form.append("language", language);
@@ -368,11 +371,35 @@ export function VoiceInput() {
       const history = getRecurringIssues(language, 2);
       setRecurringIssues(history);
 
-      const res = await authedFetch("/api/analyze-pronunciation", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ transcript, altTranscript: altTranscriptRef.current ?? undefined, language, target: level === "freestyle" ? undefined : target.text, targetMeaning: level === "freestyle" ? undefined : target.meaning, outputLang: lang, history: history.length > 0 ? history : undefined }),
-      });
+      let res: Response;
+      if (directMode && audioBlobRef.current) {
+        const { blob, mime } = audioBlobRef.current;
+        const ext = pickExt(mime);
+        const form = new FormData();
+        form.append("file", blob, `recording.${ext}`);
+        form.append("language", language);
+        form.append("outputLang", lang);
+        if (level !== "freestyle") {
+          form.append("target", target.text);
+          if (target.meaning) form.append("targetMeaning", target.meaning);
+        }
+        if (history.length > 0) form.append("history", JSON.stringify(history));
+        res = await authedFetch("/api/analyze-audio", { method: "POST", body: form });
+      } else {
+        res = await authedFetch("/api/analyze-pronunciation", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            transcript,
+            altTranscript: altTranscriptRef.current ?? undefined,
+            language,
+            target: level === "freestyle" ? undefined : target.text,
+            targetMeaning: level === "freestyle" ? undefined : target.meaning,
+            outputLang: lang,
+            history: history.length > 0 ? history : undefined,
+          }),
+        });
+      }
       if (!res.ok) {
         const t = await res.text();
         throw new Error(t || `AI analysis failed (${res.status})`);
@@ -417,6 +444,7 @@ export function VoiceInput() {
   function resetPractice() {
     setTranscript("");
     altTranscriptRef.current = null;
+    audioBlobRef.current = null;
     setAnalysis(null);
     setError(null);
     setRecurringIssues([]);
@@ -702,6 +730,42 @@ export function VoiceInput() {
               </Select>
             )}
           </div>
+
+          {/* Direct Audio Mode toggle — model listens to the recording itself
+              instead of only reading the transcript. Works for all levels
+              (Beginner → Freestyle). */}
+          <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="min-w-0">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Direct audio mode
+              </div>
+              <div className="text-[11px] text-muted-foreground/80 mt-0.5">
+                {directMode
+                  ? "AI listens to your voice directly — more accurate pronunciation feedback."
+                  : "AI reads only the transcript — faster, less nuanced."}
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={directMode}
+              aria-label="Toggle direct audio mode"
+              onClick={() => !analyzing && setDirectMode((v) => !v)}
+              disabled={analyzing}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                directMode ? "bg-gradient-primary shadow-glow" : "bg-muted",
+                analyzing && "opacity-60 cursor-not-allowed",
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-5 w-5 transform rounded-full bg-background shadow transition-transform",
+                  directMode ? "translate-x-5" : "translate-x-0.5",
+                )}
+              />
+            </button>
+          </div>
         </section>
 
 
@@ -909,33 +973,42 @@ export function VoiceInput() {
           </div>
         )}
 
-        <motion.button
-          whileHover={{ scale: transcript.trim() && !analyzing ? 1.01 : 1 }}
-          whileTap={{ scale: 0.99 }}
-          onClick={() => analyzeWithAI()}
-          disabled={!transcript.trim() || analyzing}
-          className={cn(
-            "relative flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-semibold text-primary-foreground shadow-glow overflow-hidden",
-            "bg-gradient-primary animate-gradient",
-            (!transcript.trim() || analyzing) && "opacity-60 cursor-not-allowed",
-          )}
-        >
-          {analyzing && (
-            <span
-              className="absolute inset-0 opacity-40"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
-                backgroundSize: "200% 100%",
-                animation: "shimmer 1.4s linear infinite",
-              }}
-            />
-          )}
-          <span className="relative flex items-center gap-2">
-            {analyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-            {analyzing ? "Analyzing your pronunciation…" : "Analyze My Pronunciation"}
-          </span>
-        </motion.button>
+        {(() => {
+          const canAnalyze = directMode ? !!audioBlobRef.current : !!transcript.trim();
+          return (
+            <motion.button
+              whileHover={{ scale: canAnalyze && !analyzing ? 1.01 : 1 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => analyzeWithAI()}
+              disabled={!canAnalyze || analyzing}
+              className={cn(
+                "relative flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-semibold text-primary-foreground shadow-glow overflow-hidden",
+                "bg-gradient-primary animate-gradient",
+                (!canAnalyze || analyzing) && "opacity-60 cursor-not-allowed",
+              )}
+            >
+              {analyzing && (
+                <span
+                  className="absolute inset-0 opacity-40"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 1.4s linear infinite",
+                  }}
+                />
+              )}
+              <span className="relative flex items-center gap-2">
+                {analyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                {analyzing
+                  ? "Analyzing your pronunciation…"
+                  : directMode
+                    ? "Analyze My Voice (Direct)"
+                    : "Analyze My Pronunciation"}
+              </span>
+            </motion.button>
+          );
+        })()}
       </div>
 
       {/* Analysis dashboard */}
