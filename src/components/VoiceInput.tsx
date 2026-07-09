@@ -444,6 +444,7 @@ export function VoiceInput() {
   function resetPractice() {
     setTranscript("");
     altTranscriptRef.current = null;
+    audioBlobRef.current = null;
     setAnalysis(null);
     setError(null);
     setRecurringIssues([]);
