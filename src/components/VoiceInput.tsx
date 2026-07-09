@@ -185,6 +185,7 @@ export function VoiceInput() {
   const chunksRef = useRef<Blob[]>([]);
   const altTranscriptRef = useRef<string | null>(null);
   const audioBlobRef = useRef<{ blob: Blob; mime: string } | null>(null);
+  const analysisCacheRef = useRef<Partial<Record<"en" | "bn", Analysis>>>({});
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
