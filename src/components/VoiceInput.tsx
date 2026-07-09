@@ -484,6 +484,7 @@ export function VoiceInput() {
     setTranscript("");
     altTranscriptRef.current = null;
     audioBlobRef.current = null;
+    analysisCacheRef.current = {};
     setAnalysis(null);
     setError(null);
     setRecurringIssues([]);
