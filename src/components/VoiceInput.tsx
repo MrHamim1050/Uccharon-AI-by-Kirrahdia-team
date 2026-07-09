@@ -329,6 +329,20 @@ export function VoiceInput() {
   }
 
   function stopRecording() {
+    // Freeze timer & waveform immediately so the UI reflects the click,
+    // even if MediaRecorder.onstop fires a moment later.
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    if (startedAtRef.current) {
+      setElapsedMs(Date.now() - startedAtRef.current);
+    }
+    setStatus("transcribing");
     const rec = mediaRecorderRef.current;
     if (rec && rec.state !== "inactive") rec.stop();
   }
