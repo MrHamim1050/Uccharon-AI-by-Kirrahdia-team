@@ -343,6 +343,7 @@ export function VoiceInput() {
       }
       const ext = pickExt(mime);
       setAudioUrl(URL.createObjectURL(blob));
+      audioBlobRef.current = { blob, mime };
       const form = new FormData();
       form.append("file", blob, `recording.${ext}`);
       form.append("language", language);
