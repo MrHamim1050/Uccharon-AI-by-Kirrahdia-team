@@ -167,6 +167,7 @@ export function VoiceInput() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [outputLang, setOutputLang] = useState<"en" | "bn">("bn");
+  const [directMode, setDirectMode] = useState<boolean>(true);
   const [recurringIssues, setRecurringIssues] = useState<{ pattern: string; count: number; lastTip: string }[]>([]);
   const [adaptiveSuggestion, setAdaptiveSuggestion] = useState<string | null>(null);
 

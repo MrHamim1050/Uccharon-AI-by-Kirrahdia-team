@@ -16,6 +16,7 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 import { Route as ApiRequestTokenRouteImport } from './routes/api/request-token'
 import { Route as ApiAnalyzePronunciationRouteImport } from './routes/api/analyze-pronunciation'
+import { Route as ApiAnalyzeAudioRouteImport } from './routes/api/analyze-audio'
 import { Route as ApiPublicAnalyticsRouteImport } from './routes/api/public/analytics'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -54,6 +55,11 @@ const ApiAnalyzePronunciationRoute = ApiAnalyzePronunciationRouteImport.update({
   path: '/api/analyze-pronunciation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAnalyzeAudioRoute = ApiAnalyzeAudioRouteImport.update({
+  id: '/api/analyze-audio',
+  path: '/api/analyze-audio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAnalyticsRoute = ApiPublicAnalyticsRouteImport.update({
   id: '/api/public/analytics',
   path: '/api/public/analytics',
@@ -63,6 +69,7 @@ const ApiPublicAnalyticsRoute = ApiPublicAnalyticsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/analyze-audio': typeof ApiAnalyzeAudioRoute
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
   '/api/request-token': typeof ApiRequestTokenRoute
   '/api/transcribe': typeof ApiTranscribeRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/analyze-audio': typeof ApiAnalyzeAudioRoute
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
   '/api/request-token': typeof ApiRequestTokenRoute
   '/api/transcribe': typeof ApiTranscribeRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/analyze-audio': typeof ApiAnalyzeAudioRoute
   '/api/analyze-pronunciation': typeof ApiAnalyzePronunciationRoute
   '/api/request-token': typeof ApiRequestTokenRoute
   '/api/transcribe': typeof ApiTranscribeRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/sitemap.xml'
+    | '/api/analyze-audio'
     | '/api/analyze-pronunciation'
     | '/api/request-token'
     | '/api/transcribe'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/sitemap.xml'
+    | '/api/analyze-audio'
     | '/api/analyze-pronunciation'
     | '/api/request-token'
     | '/api/transcribe'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/sitemap.xml'
+    | '/api/analyze-audio'
     | '/api/analyze-pronunciation'
     | '/api/request-token'
     | '/api/transcribe'
@@ -127,6 +139,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiAnalyzeAudioRoute: typeof ApiAnalyzeAudioRoute
   ApiAnalyzePronunciationRoute: typeof ApiAnalyzePronunciationRoute
   ApiRequestTokenRoute: typeof ApiRequestTokenRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
@@ -186,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAnalyzePronunciationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/analyze-audio': {
+      id: '/api/analyze-audio'
+      path: '/api/analyze-audio'
+      fullPath: '/api/analyze-audio'
+      preLoaderRoute: typeof ApiAnalyzeAudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/analytics': {
       id: '/api/public/analytics'
       path: '/api/public/analytics'
@@ -199,6 +219,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiAnalyzeAudioRoute: ApiAnalyzeAudioRoute,
   ApiAnalyzePronunciationRoute: ApiAnalyzePronunciationRoute,
   ApiRequestTokenRoute: ApiRequestTokenRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
@@ -209,13 +230,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
