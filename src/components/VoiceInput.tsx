@@ -781,8 +781,8 @@ export function VoiceInput() {
               </div>
               <div className="text-[11px] text-muted-foreground/80 mt-0.5">
                 {directMode
-                  ? "AI listens to your voice directly — more accurate pronunciation feedback."
-                  : "AI reads only the transcript — faster, less nuanced."}
+                  ? "AI listens to your voice directly for more accurate pronunciation feedback."
+                  : "AI reads only the transcript. Faster, but less nuanced."}
               </div>
             </div>
             <button
