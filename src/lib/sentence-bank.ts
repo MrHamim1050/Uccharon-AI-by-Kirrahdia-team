@@ -107,7 +107,7 @@ const FREESTYLE_SENTENCE: TargetSentence = {
   id: "freestyle",
   level: "freestyle",
   text: "",
-  meaning: "Speak freely — no target sentence.",
+  meaning: "Speak freely. No target sentence.",
 };
 
 export const SENTENCE_BANK: Bank = {
@@ -207,23 +207,23 @@ export const SENTENCE_BANK: Bank = {
     beginner: [
       { id: "ar-b1", level: "beginner", text: "مرحبًا.", translit: "Marhaban.", meaning: "Hello." },
       { id: "ar-b2", level: "beginner", text: "اسمي أحمد.", translit: "Ismi Ahmad.", meaning: "My name is Ahmad." },
-      { id: "ar-b3", level: "beginner", text: "الجو جميل اليوم.", translit: "Al-jaww jameel al-yawm.", meaning: "The weather is nice today." },
-      { id: "ar-b4", level: "beginner", text: "أحب القراءة.", translit: "Uhibb al-qira'ah.", meaning: "I love reading." },
-      { id: "ar-b5", level: "beginner", text: "من فضلك افتح الباب.", translit: "Min fadlik iftah al-baab.", meaning: "Please open the door." },
+      { id: "ar-b3", level: "beginner", text: "الجو جميل اليوم.", translit: "Aljaww jameel alyawm.", meaning: "The weather is nice today." },
+      { id: "ar-b4", level: "beginner", text: "أحب القراءة.", translit: "Uhibb alqira'ah.", meaning: "I love reading." },
+      { id: "ar-b5", level: "beginner", text: "من فضلك افتح الباب.", translit: "Min fadlik iftah albaab.", meaning: "Please open the door." },
     ],
     intermediate: [
-      { id: "ar-i1", level: "intermediate", text: "أذهب إلى الجامعة كل صباح.", translit: "Adh-hab ila al-jaami'ah kull sabaah.", meaning: "I go to the university every morning." },
-      { id: "ar-i2", level: "intermediate", text: "نحن نعمل معًا كفريق.", translit: "Nahnu na'mal ma'an ka-fareeq.", meaning: "We work together as a team." },
-      { id: "ar-i3", level: "intermediate", text: "وصلت الحافلة في الوقت المحدد.", translit: "Wasalat al-haafilah fi al-waqt al-muhaddad.", meaning: "The bus arrived on time." },
-      { id: "ar-i4", level: "intermediate", text: "أحب تعلم اللغات الجديدة.", translit: "Uhibb ta'allum al-lughaat al-jadeedah.", meaning: "I love learning new languages." },
+      { id: "ar-i1", level: "intermediate", text: "أذهب إلى الجامعة كل صباح.", translit: "Adhhab ila aljaami'ah kull sabaah.", meaning: "I go to the university every morning." },
+      { id: "ar-i2", level: "intermediate", text: "نحن نعمل معًا كفريق.", translit: "Nahnu na'mal ma'an kafareeq.", meaning: "We work together as a team." },
+      { id: "ar-i3", level: "intermediate", text: "وصلت الحافلة في الوقت المحدد.", translit: "Wasalat alhaafilah fi alwaqt almuhaddad.", meaning: "The bus arrived on time." },
+      { id: "ar-i4", level: "intermediate", text: "أحب تعلم اللغات الجديدة.", translit: "Uhibb ta'allum allughaat aljadeedah.", meaning: "I love learning new languages." },
       { id: "ar-i5", level: "intermediate", text: "هل يمكنك مساعدتي؟", translit: "Hal yumkinuka musaa'adati?", meaning: "Can you help me?" },
     ],
     advanced: [
-      { id: "ar-a1", level: "advanced", text: "التعليم أساس تقدم المجتمعات.", translit: "At-ta'leem asaas taqaddum al-mujtama'aat.", meaning: "Education is the foundation of societies' progress." },
-      { id: "ar-a2", level: "advanced", text: "حماية البيئة مسؤولية الجميع.", translit: "Himaayat al-bee'ah mas'ooliyyat al-jamee'.", meaning: "Protecting the environment is everyone's responsibility." },
-      { id: "ar-a3", level: "advanced", text: "رغم التحديات، استمر في تحقيق أهدافه.", translit: "Raghma at-tahaddiyaat, istamarra fi tahqeeq ahdaafih.", meaning: "Despite the challenges, he continued to achieve his goals." },
-      { id: "ar-a4", level: "advanced", text: "التواصل الفعال يقلل من سوء الفهم.", translit: "At-tawaasul al-fa'aal yuqallil min soo' al-fahm.", meaning: "Effective communication reduces misunderstandings." },
-      { id: "ar-a5", level: "advanced", text: "التطور التكنولوجي غيّر أسلوب حياتنا.", translit: "At-tatawwur at-tiknoloji ghayyara usloob hayaatina.", meaning: "Technological development has changed our way of life." },
+      { id: "ar-a1", level: "advanced", text: "التعليم أساس تقدم المجتمعات.", translit: "Atta'leem asaas taqaddum almujtama'aat.", meaning: "Education is the foundation of societies' progress." },
+      { id: "ar-a2", level: "advanced", text: "حماية البيئة مسؤولية الجميع.", translit: "Himaayat albee'ah mas'ooliyyat aljamee'.", meaning: "Protecting the environment is everyone's responsibility." },
+      { id: "ar-a3", level: "advanced", text: "رغم التحديات، استمر في تحقيق أهدافه.", translit: "Raghma attahaddiyaat, istamarra fi tahqeeq ahdaafih.", meaning: "Despite the challenges, he continued to achieve his goals." },
+      { id: "ar-a4", level: "advanced", text: "التواصل الفعال يقلل من سوء الفهم.", translit: "Attawaasul alfa'aal yuqallil min soo' alfahm.", meaning: "Effective communication reduces misunderstandings." },
+      { id: "ar-a5", level: "advanced", text: "التطور التكنولوجي غيّر أسلوب حياتنا.", translit: "Attatawwur attiknoloji ghayyara usloob hayaatina.", meaning: "Technological development has changed our way of life." },
     ],
   },
   fr: {
@@ -255,7 +255,7 @@ export const SENTENCE_BANK: Bank = {
       { id: "bn-b2", level: "beginner", text: "আমি ভাত খাই।", translit: "Ami bhaat khai.", meaning: "I eat rice." },
       { id: "bn-b3", level: "beginner", text: "আজ আকাশ পরিষ্কার।", translit: "Aaj akash porishkar.", meaning: "The sky is clear today." },
       { id: "bn-b4", level: "beginner", text: "তুমি কেমন আছ?", translit: "Tumi kemon achho?", meaning: "How are you?" },
-      { id: "bn-b5", level: "beginner", text: "দরজাটি বন্ধ করো।", translit: "Dorja-ti bondho koro.", meaning: "Close the door." },
+      { id: "bn-b5", level: "beginner", text: "দরজাটি বন্ধ করো।", translit: "Dorjati bondho koro.", meaning: "Close the door." },
     ],
     intermediate: [
       { id: "bn-i1", level: "intermediate", text: "আমি প্রতিদিন সকালে হাঁটতে যাই।", translit: "Ami protidin shokale hantte jai.", meaning: "I go for a walk every morning." },
@@ -266,10 +266,10 @@ export const SENTENCE_BANK: Bank = {
     ],
     advanced: [
       { id: "bn-a1", level: "advanced", text: "পরিবেশ সংরক্ষণ আমাদের সকলের দায়িত্ব।", translit: "Poribesh songrokkhon amader shokoler dayitto.", meaning: "Protecting the environment is everyone's responsibility." },
-      { id: "bn-a2", level: "advanced", text: "প্রযুক্তির অগ্রগতি মানুষের জীবনকে সহজ করেছে।", translit: "Projuktir ogrogoti manusher jibon-ke shohoj korechhe.", meaning: "Technological progress has made human life easier." },
+      { id: "bn-a2", level: "advanced", text: "প্রযুক্তির অগ্রগতি মানুষের জীবনকে সহজ করেছে।", translit: "Projuktir ogrogoti manusher jibonke shohoj korechhe.", meaning: "Technological progress has made human life easier." },
       { id: "bn-a3", level: "advanced", text: "কঠোর পরিশ্রম ছাড়া সফলতা অর্জন করা কঠিন।", translit: "Kothor porishrom chhara shofolota orjon kora kothin.", meaning: "Without hard work, success is hard to achieve." },
       { id: "bn-a4", level: "advanced", text: "কার্যকর যোগাযোগ ভুল বোঝাবুঝি কমায়।", translit: "Karjokor jogajog bhul bojhabujhi komay.", meaning: "Effective communication reduces misunderstandings." },
-      { id: "bn-a5", level: "advanced", text: "শিক্ষাই একটি জাতির উন্নয়নের ভিত্তি।", translit: "Shikkha-i ekti jatir unnoyoner bhitti.", meaning: "Education is the foundation of a nation's development." },
+      { id: "bn-a5", level: "advanced", text: "শিক্ষাই একটি জাতির উন্নয়নের ভিত্তি।", translit: "Shikkhai ekti jatir unnoyoner bhitti.", meaning: "Education is the foundation of a nation's development." },
     ],
   },
   pt: {
@@ -324,7 +324,7 @@ export const SENTENCE_BANK: Bank = {
       { id: "ur-b2", level: "beginner", text: "آج موسم اچھا ہے۔", translit: "Aaj mausam achha hai.", meaning: "The weather is nice today." },
       { id: "ur-b3", level: "beginner", text: "مجھے پانی چاہیے۔", translit: "Mujhe paani chahiye.", meaning: "I need water." },
       { id: "ur-b4", level: "beginner", text: "آپ کیسے ہیں؟", translit: "Aap kaise hain?", meaning: "How are you?" },
-      { id: "ur-b5", level: "beginner", text: "براہ کرم دروازہ بند کریں۔", translit: "Barah-e-karam darwaza band karein.", meaning: "Please close the door." },
+      { id: "ur-b5", level: "beginner", text: "براہ کرم دروازہ بند کریں۔", translit: "Barah e karam darwaza band karein.", meaning: "Please close the door." },
     ],
     intermediate: [
       { id: "ur-i1", level: "intermediate", text: "میں ہر روز اخبار پڑھتا ہوں۔", translit: "Main har roz akhbaar padhta hoon.", meaning: "I read the newspaper every day." },
