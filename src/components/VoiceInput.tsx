@@ -184,6 +184,7 @@ export function VoiceInput() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const altTranscriptRef = useRef<string | null>(null);
+  const audioBlobRef = useRef<{ blob: Blob; mime: string } | null>(null);
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
