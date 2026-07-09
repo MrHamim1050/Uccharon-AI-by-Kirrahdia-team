@@ -1101,15 +1101,6 @@ export function VoiceInput() {
               </div>
             </div>
 
-            {adaptiveSuggestion && (
-              <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
-                <TrendingUp className="h-5 w-5 shrink-0 text-primary mt-0.5" />
-                <div>
-                  <div className="font-semibold text-primary">Adaptive tip</div>
-                  {adaptiveSuggestion}
-                </div>
-              </div>
-            )}
 
             {recurringIssues.length > 0 && (
               <div className="space-y-2">
