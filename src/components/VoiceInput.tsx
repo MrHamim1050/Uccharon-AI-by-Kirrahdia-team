@@ -40,10 +40,8 @@ import type { EnhancedAudio } from "@/lib/audio-enhance";
 import {
   saveSession,
   getRecurringIssues,
-  getAverageScore,
-  getSessionCount,
 } from "@/lib/session-history";
-import { TrendingUp, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 type Status = "idle" | "recording" | "transcribing" | "error";
 
@@ -169,7 +167,7 @@ export function VoiceInput() {
   const [outputLang, setOutputLang] = useState<"en" | "bn">("bn");
   const [directMode, setDirectMode] = useState<boolean>(true);
   const [recurringIssues, setRecurringIssues] = useState<{ pattern: string; count: number; lastTip: string }[]>([]);
-  const [adaptiveSuggestion, setAdaptiveSuggestion] = useState<string | null>(null);
+  
 
   // Compose the language code sent to the backend (e.g. "bn-sylheti" or "en").
   const language = useMemo(() => {
@@ -382,12 +380,41 @@ export function VoiceInput() {
     const lang = langOverride ?? outputLang;
     const isTranslateOnly = langOverride !== undefined;
 
-    // If we already have a cached analysis for this language (from a previous
-    // translate toggle), reuse it — no extra AI round-trip, no score drift.
+    // If we already have a cached analysis for this language, reuse it —
+    // no extra AI round-trip, no score drift.
     const cached = analysisCacheRef.current[lang];
     if (isTranslateOnly && cached) {
       setAnalysis(cached);
       return;
+    }
+
+    // Translate-only path: use the dedicated translation endpoint so the
+    // score, metrics, issue count, and native-script words never change.
+    if (isTranslateOnly) {
+      const source =
+        analysisCacheRef.current.bn ?? analysisCacheRef.current.en ?? analysis;
+      if (source) {
+        setAnalyzing(true);
+        setError(null);
+        try {
+          const res = await authedFetch("/api/translate-analysis", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ analysis: source, targetLang: lang }),
+          });
+          if (!res.ok) throw new Error(`Translate failed (${res.status})`);
+          const translated = (await res.json()) as Analysis;
+          // Hard-preserve score from the source so it can never drift.
+          const merged: Analysis = { ...translated, score: source.score ?? translated.score };
+          analysisCacheRef.current[lang] = merged;
+          setAnalysis(merged);
+        } catch (e: any) {
+          setError(e.message ?? "Translation failed");
+        } finally {
+          setAnalyzing(false);
+        }
+        return;
+      }
     }
 
     setAnalyzing(true);
@@ -430,55 +457,27 @@ export function VoiceInput() {
         throw new Error(t || `AI analysis failed (${res.status})`);
       }
       const data = (await res.json()) as Analysis;
+      analysisCacheRef.current[lang] = data;
+      setAnalysis(data);
 
-      // Preserve the original numeric fields on translate-only re-runs so the
-      // score/metrics never drift between language toggles.
-      let finalData = data;
-      const anyCached = analysisCacheRef.current.bn ?? analysisCacheRef.current.en;
-      if (isTranslateOnly && anyCached) {
-        finalData = {
-          ...data,
-          score: anyCached.score ?? data.score,
-        };
-      }
-      analysisCacheRef.current[lang] = finalData;
-      setAnalysis(finalData);
-
-      // Only save the session on the first analysis, not on translate toggles.
-      if (!isTranslateOnly) {
-        saveSession({
-          language,
-          dialect: primaryLang === "bn" && dialect !== "standard" ? dialect : null,
-          level,
-          targetSentence: level === "freestyle" ? null : target.text,
-          transcript,
-          score: finalData.score ?? null,
-          issues: finalData.issues ?? [],
-          strengths: finalData.strengths ?? [],
-          practiceTip: finalData.practiceTip ?? "",
-        });
-
-        // Compute adaptive suggestion after saving
-        const avg = getAverageScore(language, 5);
-        const count = getSessionCount(language);
-        if (avg !== null && count >= 3) {
-          if (avg > 85 && level !== "advanced") {
-            setAdaptiveSuggestion(`Great work! Your average score is ${Math.round(avg)}. Try the next level up.`);
-          } else if (avg < 50 && level !== "beginner") {
-            setAdaptiveSuggestion(`Your average score is ${Math.round(avg)}. Consider practicing at a lower level to build confidence.`);
-          } else {
-            setAdaptiveSuggestion(null);
-          }
-        } else {
-          setAdaptiveSuggestion(null);
-        }
-      }
+      saveSession({
+        language,
+        dialect: primaryLang === "bn" && dialect !== "standard" ? dialect : null,
+        level,
+        targetSentence: level === "freestyle" ? null : target.text,
+        transcript,
+        score: data.score ?? null,
+        issues: data.issues ?? [],
+        strengths: data.strengths ?? [],
+        practiceTip: data.practiceTip ?? "",
+      });
     } catch (e: any) {
       setError(e.message ?? "AI analysis failed");
     } finally {
       setAnalyzing(false);
     }
   }
+
 
   function resetPractice() {
     setTranscript("");
@@ -488,7 +487,7 @@ export function VoiceInput() {
     setAnalysis(null);
     setError(null);
     setRecurringIssues([]);
-    setAdaptiveSuggestion(null);
+    
     if (audioUrl) {
       URL.revokeObjectURL(audioUrl);
       setAudioUrl(null);
@@ -1102,15 +1101,6 @@ export function VoiceInput() {
               </div>
             </div>
 
-            {adaptiveSuggestion && (
-              <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
-                <TrendingUp className="h-5 w-5 shrink-0 text-primary mt-0.5" />
-                <div>
-                  <div className="font-semibold text-primary">Adaptive tip</div>
-                  {adaptiveSuggestion}
-                </div>
-              </div>
-            )}
 
             {recurringIssues.length > 0 && (
               <div className="space-y-2">
