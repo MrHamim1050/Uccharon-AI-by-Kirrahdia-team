@@ -15,10 +15,15 @@ export type LanguageCode =
 export type BnDialect =
   | "standard"
   | "sylheti"
-  | "chattogramia"
+  | "chatgaiya"
+  | "barishali"
   | "noakhailla"
   | "rangpuri"
-  | "barishailla";
+  | "varendri"
+  | "mymensinghi"
+  | "dhakaiya-kutti"
+  | "comillan"
+  | "jessore-khulnaiya";
 
 export const LANGUAGE_LABELS: Record<LanguageCode, string> = {
   en: "English",
@@ -47,21 +52,31 @@ export const LANGUAGE_ORDER: LanguageCode[] = [
 ];
 
 export const BN_DIALECT_LABELS: Record<BnDialect, string> = {
-  standard: "Standard Bangla (প্রমিত)",
-  sylheti: "Sylheti (সিলেটি)",
-  chattogramia: "Chattogramia (চাটগাঁইয়া)",
-  noakhailla: "Noakhailla (নোয়াখাইল্লা)",
-  rangpuri: "Rangpuri (রংপুরী)",
-  barishailla: "Barishailla (বরিশাইল্লা)",
+  standard: "Standard Bengla (প্রমিত বাংলা)",
+  sylheti: "Sylheti (Sylhet Division)",
+  chatgaiya: "Chatgaiya (Chittagong Division)",
+  barishali: "Barishali (Barisal Division)",
+  noakhailla: "Noakhailla (Noakhali region)",
+  rangpuri: "Rangpuri (Rangpur Division)",
+  varendri: "Varendri (Rajshahi Division)",
+  mymensinghi: "Mymensinghi (Mymensingh Division)",
+  "dhakaiya-kutti": "Dhakaiya Kutti (Old Dhaka)",
+  comillan: "Comillan (Comilla region)",
+  "jessore-khulnaiya": "Jessore-Khulnaiya (Khulna Division)",
 };
 
 export const BN_DIALECT_ORDER: BnDialect[] = [
   "standard",
   "sylheti",
-  "chattogramia",
+  "chatgaiya",
+  "barishali",
   "noakhailla",
   "rangpuri",
-  "barishailla",
+  "varendri",
+  "mymensinghi",
+  "dhakaiya-kutti",
+  "comillan",
+  "jessore-khulnaiya",
 ];
 
 /** BCP-47 locale used for browser SpeechSynthesis TTS. */

@@ -33,10 +33,15 @@ const LANG_SCRIPTS: Record<string, string> = {
 
 const BN_DIALECT_LABEL: Record<string, string> = {
   sylheti: "Sylheti",
-  chattogramia: "Chattogramia",
+  chatgaiya: "Chatgaiya",
   noakhailla: "Noakhailla",
   rangpuri: "Rangpuri",
-  barishailla: "Barishailla",
+  barishali: "Barishali",
+  varendri: "Varendri",
+  mymensinghi: "Mymensinghi",
+  "dhakaiya-kutti": "Dhakaiya Kutti",
+  comillan: "Comillan",
+  "jessore-khulnaiya": "Jessore-Khulnaiya",
 };
 
 function buildPrompt(language?: string) {

@@ -7,7 +7,8 @@ const ALLOWED_LANG_BASES = new Set([
   "en", "zh", "hi", "es", "ar", "fr", "bn", "pt", "ru", "ur",
 ]);
 const ALLOWED_BN_DIALECTS = new Set([
-  "sylheti", "chattogramia", "noakhailla", "rangpuri", "barishailla",
+  "sylheti", "chatgaiya", "noakhailla", "rangpuri", "barishali",
+  "varendri", "mymensinghi", "dhakaiya-kutti", "comillan", "jessore-khulnaiya",
 ]);
 
 function validLanguage(lang: string): boolean {

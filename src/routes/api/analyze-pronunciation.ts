@@ -47,10 +47,15 @@ const LANG_NAMES: Record<string, string> = {
 
 const BN_DIALECT_NAMES: Record<string, string> = {
   sylheti: "Sylheti",
-  chattogramia: "Chattogramia",
+  chatgaiya: "Chatgaiya",
   noakhailla: "Noakhailla",
   rangpuri: "Rangpuri",
-  barishailla: "Barishailla",
+  barishali: "Barishali",
+  varendri: "Varendri",
+  mymensinghi: "Mymensinghi",
+  "dhakaiya-kutti": "Dhakaiya Kutti",
+  comillan: "Comillan",
+  "jessore-khulnaiya": "Jessore-Khulnaiya",
 };
 
 function describeLanguage(code?: string) {
