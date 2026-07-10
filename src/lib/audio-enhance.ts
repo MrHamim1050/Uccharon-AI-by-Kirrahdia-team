@@ -129,7 +129,7 @@ export async function startEnhancedCapture(options?: {
       gainNode.disconnect();
       rnnoise?.disconnect();
       rnnoise?.destroy?.();
-      limiter.disconnect();
+      limiter?.disconnect();
       analyser.disconnect();
     } catch {
       /* ignore */
