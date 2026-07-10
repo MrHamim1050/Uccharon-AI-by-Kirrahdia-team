@@ -56,6 +56,8 @@ export function AppHeader() {
           </nav>
         </div>
       </div>
+      <AudioSettingsDialog open={audioOpen} onOpenChange={setAudioOpen} />
     </header>
+
   );
 }
