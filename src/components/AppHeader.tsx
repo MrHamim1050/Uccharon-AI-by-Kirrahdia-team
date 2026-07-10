@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun, Settings, HelpCircle, User, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AudioSettingsDialog } from "@/components/AudioSettingsDialog";
+
 
 export function AppHeader() {
   const [isDark, setIsDark] = useState(false);
+  const [audioOpen, setAudioOpen] = useState(false);
+
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
@@ -39,9 +43,10 @@ export function AppHeader() {
             <Button variant="ghost" size="icon" className="rounded-full h-9 w-9" onClick={toggleTheme} aria-label="Toggle theme">
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 hidden sm:inline-flex" aria-label="Settings">
+            <Button variant="ghost" size="icon" className="rounded-full h-9 w-9" onClick={() => setAudioOpen(true)} aria-label="Audio settings">
               <Settings className="h-4 w-4" />
             </Button>
+
             <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 hidden sm:inline-flex" aria-label="Help">
               <HelpCircle className="h-4 w-4" />
             </Button>
