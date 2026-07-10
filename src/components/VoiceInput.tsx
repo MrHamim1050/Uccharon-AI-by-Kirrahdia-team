@@ -288,8 +288,15 @@ export function VoiceInput() {
     }
     try {
       const { startEnhancedCapture } = await import("@/lib/audio-enhance");
-      const enhanced = await startEnhancedCapture({ gain: 1.6 });
+      const { loadAudioSettings } = await import("@/lib/audio-settings");
+      const s = loadAudioSettings();
+      const enhanced = await startEnhancedCapture({
+        gain: s.gain,
+        noiseSuppression: s.noiseSuppression,
+        softLimiter: s.softLimiter,
+      });
       enhancedRef.current = enhanced;
+
       
       analyserRef.current = enhanced.analyser;
 
