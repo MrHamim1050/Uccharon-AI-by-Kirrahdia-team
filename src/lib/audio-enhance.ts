@@ -46,8 +46,13 @@ let workletLoadedFor: WeakSet<AudioContext> = new WeakSet();
 
 export async function startEnhancedCapture(options?: {
   gain?: number;
+  noiseSuppression?: boolean;
+  softLimiter?: boolean;
 }): Promise<EnhancedAudio> {
   const targetGain = options?.gain ?? 1.6;
+  const useNoiseSuppression = options?.noiseSuppression ?? true;
+  const useLimiter = options?.softLimiter ?? true;
+
 
   const micStream = await navigator.mediaDevices.getUserMedia({
     audio: {
