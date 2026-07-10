@@ -86,35 +86,42 @@ export async function startEnhancedCapture(options?: {
   gainNode.gain.value = targetGain;
 
   let rnnoise: RnnoiseWorkletNode | null = null;
-  try {
-    rnnoise = new RnnoiseWorkletNode(audioCtx, {
-      maxChannels: 1,
-      wasmBinary: cachedRnnoiseWasm,
-    });
-  } catch {
-    rnnoise = null; // graceful fallback if worklet fails
+  if (useNoiseSuppression) {
+    try {
+      rnnoise = new RnnoiseWorkletNode(audioCtx, {
+        maxChannels: 1,
+        wasmBinary: cachedRnnoiseWasm,
+      });
+    } catch {
+      rnnoise = null; // graceful fallback if worklet fails
+    }
   }
 
-  const limiter = audioCtx.createWaveShaper();
-  limiter.curve = buildSoftClipCurve(0.9);
-  limiter.oversample = "2x";
+  const limiter = useLimiter ? audioCtx.createWaveShaper() : null;
+  if (limiter) {
+    limiter.curve = buildSoftClipCurve(0.9);
+    limiter.oversample = "2x";
+  }
 
   const analyser = audioCtx.createAnalyser();
   analyser.fftSize = 2048;
 
   const destination = audioCtx.createMediaStreamDestination();
 
-  // Wire chain: source → gain → (rnnoise?) → limiter → [analyser, destination]
+  // Chain: source → gain → (rnnoise?) → (limiter?) → [analyser, destination]
   source.connect(gainNode);
-  const afterGain: AudioNode = gainNode;
+  let tail: AudioNode = gainNode;
   if (rnnoise) {
-    afterGain.connect(rnnoise);
-    rnnoise.connect(limiter);
-  } else {
-    afterGain.connect(limiter);
+    tail.connect(rnnoise);
+    tail = rnnoise;
   }
-  limiter.connect(analyser);
-  limiter.connect(destination);
+  if (limiter) {
+    tail.connect(limiter);
+    tail = limiter;
+  }
+  tail.connect(analyser);
+  tail.connect(destination);
+
 
   const dispose = async () => {
     try {
