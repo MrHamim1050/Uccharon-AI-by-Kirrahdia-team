@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Mic } from "lucide-react";
+import logoIcon from "@/assets/logo-icon.png";
 
 export function Splash() {
   const title = "Uccharon AI";
