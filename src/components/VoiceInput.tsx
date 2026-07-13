@@ -26,11 +26,8 @@ import {
   LANGUAGE_LABELS,
   LANGUAGE_ORDER,
   LANGUAGE_TTS_LOCALE,
-  BN_DIALECT_LABELS,
-  BN_DIALECT_ORDER,
   type Level,
   type LanguageCode,
-  type BnDialect,
   type TargetSentence,
 } from "@/lib/sentence-bank";
 import ttsCache from "@/lib/tts-cache.json";
@@ -154,7 +151,6 @@ function MetricBar({ label, value }: { label: string; value: number }) {
 
 export function VoiceInput() {
   const [primaryLang, setPrimaryLang] = useState<LanguageCode>("bn");
-  const [dialect, setDialect] = useState<BnDialect>("standard");
   const [level, setLevel] = useState<Level>("beginner");
   const [target, setTarget] = useState<TargetSentence>(() => firstSentence("bn", "beginner"));
   const [status, setStatus] = useState<Status>("idle");
@@ -169,11 +165,8 @@ export function VoiceInput() {
   const [recurringIssues, setRecurringIssues] = useState<{ pattern: string; count: number; lastTip: string }[]>([]);
   
 
-  // Compose the language code sent to the backend (e.g. "bn-sylheti" or "en").
-  const language = useMemo(() => {
-    if (primaryLang === "bn" && dialect !== "standard") return `bn-${dialect}`;
-    return primaryLang;
-  }, [primaryLang, dialect]);
+  // Language code sent to the backend (dialects removed — always base language).
+  const language = primaryLang;
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const enhancedRef = useRef<EnhancedAudio | null>(null);
@@ -186,6 +179,7 @@ export function VoiceInput() {
   const analysisCacheRef = useRef<Partial<Record<"en" | "bn", Analysis>>>({});
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recordingActiveRef = useRef<boolean>(false);
 
   useEffect(() => {
     setTarget((cur) => randomSentence(primaryLang, level, cur.id));
@@ -321,7 +315,15 @@ export function VoiceInput() {
 
       startedAtRef.current = Date.now();
       setElapsedMs(0);
+      recordingActiveRef.current = true;
       timerRef.current = setInterval(() => {
+        if (!recordingActiveRef.current) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          return;
+        }
         setElapsedMs(Date.now() - startedAtRef.current);
       }, 100);
 
@@ -337,6 +339,7 @@ export function VoiceInput() {
   function stopRecording() {
     // Freeze timer & waveform immediately so the UI reflects the click,
     // even if MediaRecorder.onstop fires a moment later.
+    recordingActiveRef.current = false;
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -469,7 +472,7 @@ export function VoiceInput() {
 
       saveSession({
         language,
-        dialect: primaryLang === "bn" && dialect !== "standard" ? dialect : null,
+        dialect: null,
         level,
         targetSentence: level === "freestyle" ? null : target.text,
         transcript,
@@ -729,53 +732,27 @@ export function VoiceInput() {
             <Globe className="h-3.5 w-3.5" />
             Detection language
           </div>
-          <div
-            className={cn(
-              "grid gap-2",
-              primaryLang === "bn" ? "sm:grid-cols-2" : "sm:grid-cols-1",
-            )}
+          <Select
+            value={primaryLang}
+            onValueChange={(v) => {
+              const lc = v as LanguageCode;
+              setPrimaryLang(lc);
+              setTarget(randomSentence(lc, level));
+              resetPractice();
+            }}
+            disabled={isRecording || isBusy}
           >
-            <Select
-              value={primaryLang}
-              onValueChange={(v) => {
-                const lc = v as LanguageCode;
-                setPrimaryLang(lc);
-                if (lc !== "bn") setDialect("standard");
-                setTarget(randomSentence(lc, level));
-                resetPractice();
-              }}
-              disabled={isRecording || isBusy}
-            >
-              <SelectTrigger className="rounded-xl border-border/60 bg-background/60">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                {LANGUAGE_ORDER.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    {LANGUAGE_LABELS[code]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {primaryLang === "bn" && (
-              <Select
-                value={dialect}
-                onValueChange={(v) => setDialect(v as BnDialect)}
-                disabled={isRecording || isBusy}
-              >
-                <SelectTrigger className="rounded-xl border-border/60 bg-background/60">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  {BN_DIALECT_ORDER.map((code) => (
-                    <SelectItem key={code} value={code}>
-                      {BN_DIALECT_LABELS[code]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+            <SelectTrigger className="rounded-xl border-border/60 bg-background/60">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              {LANGUAGE_ORDER.map((code) => (
+                <SelectItem key={code} value={code}>
+                  {LANGUAGE_LABELS[code]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Direct Audio Mode toggle — model listens to the recording itself
               instead of only reading the transcript. Works for all levels
