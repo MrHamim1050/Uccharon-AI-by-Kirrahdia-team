@@ -121,7 +121,7 @@
 @utility glass {
   background: var(--glass-bg);
   backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid var(--glass-border);
+  border: 0.5px solid var(--glass-border);
   box-shadow: var(--shadow-elegant);
 }
 

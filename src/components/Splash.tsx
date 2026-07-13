@@ -51,7 +51,7 @@ export function Splash() {
           transition={{ duration: 0.6, delay: 0.9, ease: "backOut" }}
           className="relative grid h-24 w-24 place-items-center rounded-full bg-gradient-primary shadow-glow"
         >
-          <img src={logoIcon} alt="Uccharon AI" className="h-16 w-16 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+          <img src={logoIcon} alt="Uccharon AI" className="h-16 w-16 object-contain" style={{ filter: "brightness(0)" }} />
         </motion.div>
 
         {/* Title letter by letter */}
