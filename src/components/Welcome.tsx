@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Mic, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import logoIcon from "@/assets/logo-icon.png";
 
 export function Welcome({ onStart }: { onStart: () => void }) {
   return (
