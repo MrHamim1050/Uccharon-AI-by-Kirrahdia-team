@@ -722,53 +722,27 @@ export function VoiceInput() {
             <Globe className="h-3.5 w-3.5" />
             Detection language
           </div>
-          <div
-            className={cn(
-              "grid gap-2",
-              primaryLang === "bn" ? "sm:grid-cols-2" : "sm:grid-cols-1",
-            )}
+          <Select
+            value={primaryLang}
+            onValueChange={(v) => {
+              const lc = v as LanguageCode;
+              setPrimaryLang(lc);
+              setTarget(randomSentence(lc, level));
+              resetPractice();
+            }}
+            disabled={isRecording || isBusy}
           >
-            <Select
-              value={primaryLang}
-              onValueChange={(v) => {
-                const lc = v as LanguageCode;
-                setPrimaryLang(lc);
-                if (lc !== "bn") setDialect("standard");
-                setTarget(randomSentence(lc, level));
-                resetPractice();
-              }}
-              disabled={isRecording || isBusy}
-            >
-              <SelectTrigger className="rounded-xl border-border/60 bg-background/60">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                {LANGUAGE_ORDER.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    {LANGUAGE_LABELS[code]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {primaryLang === "bn" && (
-              <Select
-                value={dialect}
-                onValueChange={(v) => setDialect(v as BnDialect)}
-                disabled={isRecording || isBusy}
-              >
-                <SelectTrigger className="rounded-xl border-border/60 bg-background/60">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  {BN_DIALECT_ORDER.map((code) => (
-                    <SelectItem key={code} value={code}>
-                      {BN_DIALECT_LABELS[code]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+            <SelectTrigger className="rounded-xl border-border/60 bg-background/60">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              {LANGUAGE_ORDER.map((code) => (
+                <SelectItem key={code} value={code}>
+                  {LANGUAGE_LABELS[code]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Direct Audio Mode toggle — model listens to the recording itself
               instead of only reading the transcript. Works for all levels
