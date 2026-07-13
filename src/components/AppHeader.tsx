@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Moon, Sun, Settings, HelpCircle, User, Mic } from "lucide-react";
+import { Moon, Sun, Settings, HelpCircle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AudioSettingsDialog } from "@/components/AudioSettingsDialog";
+import logoIcon from "@/assets/logo-icon.png";
 
 
 export function AppHeader() {
