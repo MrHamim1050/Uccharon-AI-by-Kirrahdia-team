@@ -19,7 +19,7 @@ export function Welcome({ onStart }: { onStart: () => void }) {
       >
         <div className="absolute inset-0 rounded-full bg-gradient-primary opacity-40 blur-3xl animate-breathe" />
         <div className="relative grid h-36 w-36 place-items-center rounded-full bg-gradient-primary shadow-glow animate-breathe">
-          <Mic className="h-16 w-16 text-primary-foreground" strokeWidth={2} />
+          <img src={logoIcon} alt="Uccharon AI" className="h-20 w-20 object-contain" style={{ filter: "brightness(0)" }} />
         </div>
       </motion.div>
 
