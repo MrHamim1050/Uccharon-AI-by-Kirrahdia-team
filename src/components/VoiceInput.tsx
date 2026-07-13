@@ -462,7 +462,7 @@ export function VoiceInput() {
 
       saveSession({
         language,
-        dialect: primaryLang === "bn" && dialect !== "standard" ? dialect : null,
+        dialect: null,
         level,
         targetSentence: level === "freestyle" ? null : target.text,
         transcript,
