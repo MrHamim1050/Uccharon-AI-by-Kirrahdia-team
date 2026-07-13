@@ -151,7 +151,6 @@ function MetricBar({ label, value }: { label: string; value: number }) {
 
 export function VoiceInput() {
   const [primaryLang, setPrimaryLang] = useState<LanguageCode>("bn");
-  const [dialect, setDialect] = useState<BnDialect>("standard");
   const [level, setLevel] = useState<Level>("beginner");
   const [target, setTarget] = useState<TargetSentence>(() => firstSentence("bn", "beginner"));
   const [status, setStatus] = useState<Status>("idle");
@@ -166,11 +165,8 @@ export function VoiceInput() {
   const [recurringIssues, setRecurringIssues] = useState<{ pattern: string; count: number; lastTip: string }[]>([]);
   
 
-  // Compose the language code sent to the backend (e.g. "bn-sylheti" or "en").
-  const language = useMemo(() => {
-    if (primaryLang === "bn" && dialect !== "standard") return `bn-${dialect}`;
-    return primaryLang;
-  }, [primaryLang, dialect]);
+  // Language code sent to the backend (dialects removed — always base language).
+  const language = primaryLang;
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const enhancedRef = useRef<EnhancedAudio | null>(null);
