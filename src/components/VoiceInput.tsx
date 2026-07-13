@@ -179,6 +179,7 @@ export function VoiceInput() {
   const analysisCacheRef = useRef<Partial<Record<"en" | "bn", Analysis>>>({});
   const startedAtRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recordingActiveRef = useRef<boolean>(false);
 
   useEffect(() => {
     setTarget((cur) => randomSentence(primaryLang, level, cur.id));
