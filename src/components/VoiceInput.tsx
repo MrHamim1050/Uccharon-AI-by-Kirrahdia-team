@@ -314,7 +314,15 @@ export function VoiceInput() {
 
       startedAtRef.current = Date.now();
       setElapsedMs(0);
+      recordingActiveRef.current = true;
       timerRef.current = setInterval(() => {
+        if (!recordingActiveRef.current) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          return;
+        }
         setElapsedMs(Date.now() - startedAtRef.current);
       }, 100);
 
@@ -330,6 +338,7 @@ export function VoiceInput() {
   function stopRecording() {
     // Freeze timer & waveform immediately so the UI reflects the click,
     // even if MediaRecorder.onstop fires a moment later.
+    recordingActiveRef.current = false;
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
