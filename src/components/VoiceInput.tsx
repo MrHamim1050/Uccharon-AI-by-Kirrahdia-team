@@ -26,11 +26,8 @@ import {
   LANGUAGE_LABELS,
   LANGUAGE_ORDER,
   LANGUAGE_TTS_LOCALE,
-  BN_DIALECT_LABELS,
-  BN_DIALECT_ORDER,
   type Level,
   type LanguageCode,
-  type BnDialect,
   type TargetSentence,
 } from "@/lib/sentence-bank";
 import ttsCache from "@/lib/tts-cache.json";
