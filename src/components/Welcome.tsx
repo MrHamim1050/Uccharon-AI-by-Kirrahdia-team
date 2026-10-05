@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import logoIcon from "@/assets/logo-icon.png";
+import { ArrowRight, Mic } from "lucide-react";
 
 export function Welcome({ onStart }: { onStart: () => void }) {
   return (
@@ -19,7 +18,7 @@ export function Welcome({ onStart }: { onStart: () => void }) {
       >
         <div className="absolute inset-0 rounded-full bg-gradient-primary opacity-40 blur-3xl animate-breathe" />
         <div className="relative grid h-36 w-36 place-items-center rounded-full bg-gradient-primary shadow-glow animate-breathe">
-          <img src={logoIcon} alt="Uccharon AI" className="h-20 w-20 object-contain" style={{ filter: "brightness(0)" }} />
+          <Mic className="h-16 w-16" strokeWidth={2.5} style={{ filter: "brightness(0)" }} />
         </div>
       </motion.div>
 
