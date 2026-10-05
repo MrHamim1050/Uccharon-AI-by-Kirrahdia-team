@@ -9,25 +9,55 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as GuideBengaliPronunciationRouteImport } from './routes/guide.bengali-pronunciation'
-import { Route as ApiTtsRouteImport } from './routes/api/tts'
-import { Route as ApiTranslateAnalysisRouteImport } from './routes/api/translate-analysis'
-import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
-import { Route as ApiRequestTokenRouteImport } from './routes/api/request-token'
-import { Route as ApiAnalyzePronunciationRouteImport } from './routes/api/analyze-pronunciation'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ApiAnalyzeAudioRouteImport } from './routes/api/analyze-audio'
+import { Route as ApiAnalyzePronunciationRouteImport } from './routes/api/analyze-pronunciation'
+import { Route as ApiRequestTokenRouteImport } from './routes/api/request-token'
+import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
+import { Route as ApiTranslateAnalysisRouteImport } from './routes/api/translate-analysis'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as GuideBengaliPronunciationRouteImport } from './routes/guide.bengali-pronunciation'
 import { Route as ApiPublicAnalyticsRouteImport } from './routes/api/public/analytics'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ApiAnalyzeAudioRoute = ApiAnalyzeAudioRouteImport.update({
+  id: '/api/analyze-audio',
+  path: '/api/analyze-audio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAnalyzePronunciationRoute = ApiAnalyzePronunciationRouteImport.update({
+  id: '/api/analyze-pronunciation',
+  path: '/api/analyze-pronunciation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRequestTokenRoute = ApiRequestTokenRouteImport.update({
+  id: '/api/request-token',
+  path: '/api/request-token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
+  id: '/api/transcribe',
+  path: '/api/transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranslateAnalysisRoute = ApiTranslateAnalysisRouteImport.update({
+  id: '/api/translate-analysis',
+  path: '/api/translate-analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuideBengaliPronunciationRoute =
@@ -36,36 +66,6 @@ const GuideBengaliPronunciationRoute =
     path: '/guide/bengali-pronunciation',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiTtsRoute = ApiTtsRouteImport.update({
-  id: '/api/tts',
-  path: '/api/tts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiTranslateAnalysisRoute = ApiTranslateAnalysisRouteImport.update({
-  id: '/api/translate-analysis',
-  path: '/api/translate-analysis',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
-  id: '/api/transcribe',
-  path: '/api/transcribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiRequestTokenRoute = ApiRequestTokenRouteImport.update({
-  id: '/api/request-token',
-  path: '/api/request-token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAnalyzePronunciationRoute = ApiAnalyzePronunciationRouteImport.update({
-  id: '/api/analyze-pronunciation',
-  path: '/api/analyze-pronunciation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAnalyzeAudioRoute = ApiAnalyzeAudioRouteImport.update({
-  id: '/api/analyze-audio',
-  path: '/api/analyze-audio',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicAnalyticsRoute = ApiPublicAnalyticsRouteImport.update({
   id: '/api/public/analytics',
   path: '/api/public/analytics',
@@ -163,13 +163,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -177,39 +170,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/guide/bengali-pronunciation': {
-      id: '/guide/bengali-pronunciation'
-      path: '/guide/bengali-pronunciation'
-      fullPath: '/guide/bengali-pronunciation'
-      preLoaderRoute: typeof GuideBengaliPronunciationRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/tts': {
-      id: '/api/tts'
-      path: '/api/tts'
-      fullPath: '/api/tts'
-      preLoaderRoute: typeof ApiTtsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/translate-analysis': {
-      id: '/api/translate-analysis'
-      path: '/api/translate-analysis'
-      fullPath: '/api/translate-analysis'
-      preLoaderRoute: typeof ApiTranslateAnalysisRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/transcribe': {
-      id: '/api/transcribe'
-      path: '/api/transcribe'
-      fullPath: '/api/transcribe'
-      preLoaderRoute: typeof ApiTranscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/request-token': {
-      id: '/api/request-token'
-      path: '/api/request-token'
-      fullPath: '/api/request-token'
-      preLoaderRoute: typeof ApiRequestTokenRouteImport
+    '/api/analyze-audio': {
+      id: '/api/analyze-audio'
+      path: '/api/analyze-audio'
+      fullPath: '/api/analyze-audio'
+      preLoaderRoute: typeof ApiAnalyzeAudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/analyze-pronunciation': {
@@ -219,11 +191,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAnalyzePronunciationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/analyze-audio': {
-      id: '/api/analyze-audio'
-      path: '/api/analyze-audio'
-      fullPath: '/api/analyze-audio'
-      preLoaderRoute: typeof ApiAnalyzeAudioRouteImport
+    '/api/request-token': {
+      id: '/api/request-token'
+      path: '/api/request-token'
+      fullPath: '/api/request-token'
+      preLoaderRoute: typeof ApiRequestTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/transcribe': {
+      id: '/api/transcribe'
+      path: '/api/transcribe'
+      fullPath: '/api/transcribe'
+      preLoaderRoute: typeof ApiTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/translate-analysis': {
+      id: '/api/translate-analysis'
+      path: '/api/translate-analysis'
+      fullPath: '/api/translate-analysis'
+      preLoaderRoute: typeof ApiTranslateAnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide/bengali-pronunciation': {
+      id: '/guide/bengali-pronunciation'
+      path: '/guide/bengali-pronunciation'
+      fullPath: '/guide/bengali-pronunciation'
+      preLoaderRoute: typeof GuideBengaliPronunciationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/analytics': {
